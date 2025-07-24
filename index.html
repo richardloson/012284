@@ -1,873 +1,125 @@
-<script type="text/javascript">
-        var gk_isXlsx = false;
-        var gk_xlsxFileLookup = {};
-        var gk_fileData = {};
-        function filledCell(cell) {
-          return cell !== '' && cell != null;
-        }
-        function loadFileData(filename) {
-        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
-            try {
-                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
-                var firstSheetName = workbook.SheetNames[0];
-                var worksheet = workbook.Sheets[firstSheetName];
+<!-- Agrega esto en tu HTML (idealmente al final del <body>) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+<script>
+    async function exportToPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
 
-                // Convert sheet to JSON to filter blank rows
-                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
-                // Filter out blank rows (rows where all cells are empty, null, or undefined)
-                var filteredData = jsonData.filter(row => row.some(filledCell));
+        // 🖼 Encabezado con logo y título
+        const logo = new Image();
+        logo.src = 'icons/banner.png';
+        await new Promise(resolve => logo.onload = resolve);
+        doc.addImage(logo, 'PNG', 80, 10, 50, 20);
+        doc.setFontSize(16);
+        doc.setTextColor(52, 71, 103);
+        doc.text('Reporte de Mantenimiento de Sistemas de Bombeo', 20, 40);
 
-                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
-                var headerRowIndex = filteredData.findIndex((row, index) =>
-                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
-                );
-                // Fallback
-                if (headerRowIndex === -1 || headerRowIndex > 25) {
-                  headerRowIndex = 0;
-                }
+        let yOffset = 50;
 
-                // Convert filtered JSON back to CSV
-                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
-                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
-                return csv;
-            } catch (e) {
-                console.error(e);
-                return "";
-            }
-        }
-        return gk_fileData[filename] || "";
-        }
-        </script><!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mantenimiento de Sistemas de Bombeo</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=geocoding"></script>
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f4f6f9;
-            margin: 0;
-            padding: 10px;
-            display: flex;
-            justify-content: center;
-            min-height: 100vh;
-        }
-        .container {
-            background: #ffffff;
-            padding: 10px;
-            border-radius: 4px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 700px;
-        }
-        .header img {
-            max-height: 80px;
-            display: block;
-            margin: 0 auto 10px;
-        }
-        fieldset {
-            margin-bottom: 10px;
-            padding: 10px;
-            border: 1px solid #e2e8f0;
-            border-radius: 4px;
-        }
-        legend {
-            font-size: 1.1rem;
-            font-weight: bold;
-            color: #2d3748;
-            padding: 0 5px;
-        }
-        label {
-            display: block;
-            margin-bottom: 3px;
-            color: #4a5568;
-            font-size: 0.9rem;
-        }
-        input, select, textarea, .signature-box, .photo-box {
-            width: 100%;
-            padding: 5px;
-            margin-bottom: 5px;
-            border: 1px solid #e2e8f0;
-            border-radius: 3px;
-            box-sizing: border-box;
-            font-size: 0.9rem;
-        }
-        .input-group {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 5px;
-            margin-bottom: 5px;
-        }
-        .signature-box, .photo-box {
-            height: 80px;
-            border: 2px dashed #4a5568;
-            background: #f9fafb;
-            text-align: center;
-            line-height: 80px;
-            cursor: pointer;
-        }
-        .photo-row {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 5px;
-            margin: 5px 0;
-        }
-        button {
-            padding: 8px 15px;
-            margin-right: 5px;
-            background-color: #2d3748;
-            color: white;
-            border: none;
-            border-radius: 3px;
-            cursor: pointer;
-            font-size: 0.9rem;
-        }
-        button:hover {
-            background-color: #1a202c;
-        }
-        .button-group {
-            display: flex;
-            justify-content: center;
-            margin: 10px 0;
-        }
-        .footer {
-            margin-top: 10px;
-            text-align: center;
-            background: #b3c5d6;
-            padding: 5px;
-            border-radius: 3px;
-            color: #ffffff;
-            font-size: 0.8rem;
-        }
-        @media (max-width: 600px) {
-            .input-group, .photo-row {
-                grid-template-columns: 1fr;
-            }
-            button {
-                width: 100%;
-                margin-bottom: 5px;
-            }
-            .button-group {
-                flex-direction: column;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <img src="icons/banner.png" alt="Logo" id="header-logo">
-        </div>
-        <form id="mantenimientoForm">
-            <fieldset>
-                <legend>Lugar</legend>
-                <div>
-                    <label for="lugar-gps">Posicionamiento GPS</label>
-                    <input type="text" id="lugar-gps" placeholder="Ej: 19.43, -99.13">
-                </div>
-                <div>
-                    <label for="lugar-contrato">Número de Contrato</label>
-                    <input type="text" id="lugar-contrato" required>
-                </div>
-                <div>
-                    <label for="lugar-cliente">Nombre del Cliente</label>
-                    <input type="text" id="lugar-cliente" required>
-                </div>
-                <div>
-                    <button type="button" onclick="getGPSLocation()">Obtener GPS y Dirección</button>
-                </div>
-            </fieldset>
+        // 🧠 Función para generar tabla por sección
+        function addSection(title, data) {
+            doc.setFontSize(14);
+            doc.setTextColor(0, 102, 204);
+            doc.text(title, 20, yOffset);
+            yOffset += 5;
 
-            <fieldset>
-                <legend>Bomba Jockey</legend>
-                <div class="input-group">
-                    <div>
-                        <label for="jockey-v-entrada-l1l2">V. Entrada L1-L2</label>
-                        <input type="number" id="jockey-v-entrada-l1l2" step="0.1" min="0" max="999">
-                    </div>
-                    <div>
-                        <label for="jockey-v-entrada-l1l3">V. Entrada L1-L3</label>
-                        <input type="number" id="jockey-v-entrada-l1l3" step="0.1" min="0" max="999">
-                    </div>
-                    <div>
-                        <label for="jockey-v-entrada-l2l3">V. Entrada L2-L3</label>
-                        <input type="number" id="jockey-v-entrada-l2l3" step="0.1" min="0" max="999">
-                    </div>
-                    <div>
-                        <label for="jockey-v-salida">V. Salida</label>
-                        <input type="number" id="jockey-v-salida" step="0.1" min="0" max="999">
-                    </div>
-                </div>
-                <div>
-                    <label for="jockey-parametros">Parámetros Inicio/Paro</label>
-                    <input type="text" id="jockey-parametros">
-                </div>
-                <div class="input-group">
-                    <div>
-                        <label for="jockey-lecturas-inicio">Lect. Inicio</label>
-                        <input type="number" id="jockey-lecturas-inicio" step="0.1" min="0" max="999">
-                    </div>
-                    <div>
-                        <label for="jockey-lecturas-paro">Lect. Paro</label>
-                        <input type="number" id="jockey-lecturas-paro" step="0.1" min="0" max="999">
-                    </div>
-                </div>
-                <div class="input-group">
-                    <div>
-                        <label for="jockey-amperaje-l1">Amperaje L1</label>
-                        <input type="number" id="jockey-amperaje-l1" step="0.1" min="0" max="999">
-                    </div>
-                    <div>
-                        <label for="jockey-amperaje-l2">Amperaje L2</label>
-                        <input type="number" id="jockey-amperaje-l2" step="0.1" min="0" max="999">
-                    </div>
-                    <div>
-                        <label for="jockey-amperaje-l3">Amperaje L3</label>
-                        <input type="number" id="jockey-amperaje-l3" step="0.1" min="0" max="999">
-                    </div>
-                </div>
-                <div>
-                    <label for="jockey-descarga">Descarga PSI</label>
-                    <input type="number" id="jockey-descarga" step="0.1" min="0" max="999">
-                </div>
-            </fieldset>
-
-            <fieldset>
-                <legend>Bomba Eléctrica</legend>
-                <div class="input-group">
-                    <div>
-                        <label for="electrica-v-entrada">V. Entrada</label>
-                        <input type="number" id="electrica-v-entrada" step="0.1" min="0" max="999">
-                    </div>
-                    <div>
-                        <label for="electrica-v-salida">V. Salida</label>
-                        <input type="number" id="electrica-v-salida" step="0.1" min="0" max="999">
-                    </div>
-                </div>
-                <div>
-                    <label for="electrica-parametros">Parámetros Inicio/Paro</label>
-                    <input type="text" id="electrica-parametros">
-                </div>
-                <div class="input-group">
-                    <div>
-                        <label for="electrica-lecturas-inicio">Lect. Inicio</label>
-                        <input type="number" id="electrica-lecturas-inicio" step="0.1" min="0" max="999">
-                    </div>
-                    <div>
-                        <label for="electrica-lecturas-paro">Lect. Paro</label>
-                        <input type="number" id="electrica-lecturas-paro" step="0.1" min="0" max="999">
-                    </div>
-                </div>
-                <div class="input-group">
-                    <div>
-                        <label for="electrica-amperaje-l1">Amperaje L1</label>
-                        <input type="number" id="electrica-amperaje-l1" step="0.1" min="0" max="999">
-                    </div>
-                    <div>
-                        <label for="electrica-amperaje-l2">Amperaje L2</label>
-                        <input type="number" id="electrica-amperaje-l2" step="0.1" min="0" max="999">
-                    </div>
-                    <div>
-                        <label for="electrica-amperaje-l3">Amperaje L3</label>
-                        <input type="number" id="electrica-amperaje-l3" step="0.1" min="0" max="999">
-                    </div>
-                </div>
-                <div>
-                    <label for="electrica-descarga">Descarga PSI</label>
-                    <input type="number" id="electrica-descarga" step="0.1" min="0" max="999">
-                </div>
-            </fieldset>
-
-            <fieldset>
-                <legend>Bomba Diesel</legend>
-                <div class="input-group">
-                    <div>
-                        <label for="diesel-nivel-agua">Niveles Agua</label>
-                        <input type="number" id="diesel-nivel-agua" step="0.1" min="0" max="999">
-                    </div>
-                    <div>
-                        <label for="diesel-nivel-aceite">Niveles Aceite</label>
-                        <input type="number" id="diesel-nivel-aceite" step="0.1" min="0" max="999">
-                    </div>
-                </div>
-                <div>
-                    <label for="diesel-parametros">Parámetros Inicio/Paro</label>
-                    <input type="text" id="diesel-parametros">
-                </div>
-                <div class="input-group">
-                    <div>
-                        <label for="diesel-diesel-3cuarto">Diesel +3/4</label>
-                        <input type="checkbox" id="diesel-diesel-3cuarto">
-                    </div>
-                    <div>
-                        <label for="diesel-diesel-menos3cuarto">Diesel -3/4</label>
-                        <input type="checkbox" id="diesel-diesel-menos3cuarto">
-                    </div>
-                    <div>
-                        <label for="diesel-litros-faltan">Litros faltan</label>
-                        <input type="number" id="diesel-litros-faltan" step="0.1" min="0" max="999">
-                    </div>
-                </div>
-                <div class="input-group">
-                    <div>
-                        <label for="diesel-lecturas-inicio">Lect. Inicio</label>
-                        <input type="number" id="diesel-lecturas-inicio" step="0.1" min="0" max="999">
-                    </div>
-                    <div>
-                        <label for="diesel-lecturas-paro">Lect. Paro</label>
-                        <input type="number" id="diesel-lecturas-paro" step="0.1" min="0" max="999">
-                    </div>
-                </div>
-                <div>
-                    <label for="diesel-velocidad">Velocidad RPM</label>
-                    <input type="number" id="diesel-velocidad" step="0.1" min="0" max="9999">
-                </div>
-                <div>
-                    <label for="diesel-vac">VAC</label>
-                    <input type="number" id="diesel-vac" step="0.1" min="0" max="999">
-                </div>
-                <div>
-                    <label for="diesel-presion-aceite">Pres. Aceite PSI</label>
-                    <input type="number" id="diesel-presion-aceite" step="0.1" min="0" max="999">
-                </div>
-                <div class="input-group">
-                    <div>
-                        <label for="diesel-temp-inicial">Temp. Inicial (°C)</label>
-                        <input type="number" id="diesel-temp-inicial" step="0.1" min="0" max="999">
-                    </div>
-                    <div>
-                        <label for="diesel-temp-final">Temp. Final (°C)</label>
-                        <input type="number" id="diesel-temp-final" step="0.1" min="0" max="999">
-                    </div>
-                </div>
-                <div class="input-group">
-                    <div>
-                        <label for="diesel-hrs-inicial">Hrs. Inicial</label>
-                        <input type="number" id="diesel-hrs-inicial" step="0.1" min="0" max="9999">
-                    </div>
-                    <div>
-                        <label for="diesel-hrs-final">Hrs. Final</label>
-                        <input type="number" id="diesel-hrs-final" step="0.1" min="0" max="9999">
-                    </div>
-                </div>
-                <div>
-                    <label for="diesel-observaciones">Observaciones</label>
-                    <textarea id="diesel-observaciones" rows="3"></textarea>
-                </div>
-            </fieldset>
-
-            <fieldset id="hidrantes-section">
-                <legend>Revisión de Hidrantes</legend>
-                <div class="input-group">
-                    <div>
-                        <label>Hidrante 1</label>
-                        <input type="checkbox" id="hidrante-1-ok"> OK
-                        <input type="text" id="hidrante-1-comentarios" placeholder="Comentarios">
-                    </div>
-                </div>
-                <button type="button" onclick="addHidrante()">Agregar hidrante</button>
-            </fieldset>
-
-            <div class="photo-row">
-                <div class="photo-box" id="photo1">Cargar Foto 1</div>
-                <div class="photo-box" id="photo2">Cargar Foto 2</div>
-                <div class="photo-box" id="photo3">Cargar Foto 3</div>
-                <div class="photo-box" id="photo4">Cargar Foto 4</div>
-            </div>
-
-            <fieldset>
-                <legend>Firmas</legend>
-                <div>
-                    <label for="jockey-tecnico">Técnico</label>
-                    <input type="text" id="jockey-tecnico" required>
-                </div>
-                <div class="signature-row">
-                    <div>
-                        <label for="jockey-tecnico-signature">Firma Técnico</label>
-                        <canvas id="jockey-tecnico-signature" width="300" height="80"></canvas>
-                        <button onclick="clearSignature('jockey-tecnico-signature')">Borrar</button>
-                    </div>
-                    <div>
-                        <label for="jockey-cliente-signature">Firma Cliente</label>
-                        <canvas id="jockey-cliente-signature" width="300" height="80"></canvas>
-                        <button onclick="clearSignature('jockey-cliente-signature')">Borrar</button>
-                    </div>
-                </div>
-            </fieldset>
-        </form>
-        <div class="button-group">
-            <button onclick="exportToPDF()">Exportar a PDF</button>
-            <button onclick="shareWhatsApp()">Compartir por WhatsApp</button>
-        </div>
-        <div class="footer">
-            <p>Certificados NFPA - Formato realizado por RL</p>
-            <p id="currentDateTime">24 de julio de 2025, 03:55 PM</p>
-        </div>
-    </div>
-
-    <script>
-        // Establecer fecha y hora dinámica
-        function setCurrentDateTime() {
-            const now = new Date();
-            const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true };
-            document.getElementById('currentDateTime').textContent = now.toLocaleString('es-MX', options);
-        }
-        setCurrentDateTime();
-
-        // Agregar hidrante
-        let hidranteCount = 1;
-        function addHidrante() {
-            hidranteCount++;
-            const hidrantesSection = document.getElementById('hidrantes-section');
-            const newHidrante = document.createElement('div');
-            newHidrante.className = 'input-group';
-            newHidrante.innerHTML = `
-                <div>
-                    <label>Hidrante ${hidranteCount}</label>
-                    <input type="checkbox" id="hidrante-${hidranteCount}-ok"> OK
-                    <input type="text" id="hidrante-${hidranteCount}-comentarios" placeholder="Comentarios">
-                </div>
-            `;
-            hidrantesSection.insertBefore(newHidrante, hidrantesSection.lastElementChild);
-        }
-
-        // Firma digital
-        function setupSignature(canvasId) {
-            const canvas = document.getElementById(canvasId);
-            const ctx = canvas.getContext('2d');
-            let drawing = false;
-            let lastX = 0;
-            let lastY = 0;
-
-            canvas.addEventListener('mousedown', startDrawing);
-            canvas.addEventListener('mousemove', draw);
-            canvas.addEventListener('mouseup', stopDrawing);
-            canvas.addEventListener('mouseout', stopDrawing);
-
-            canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
-            canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
-            canvas.addEventListener('touchend', stopDrawing);
-
-            function startDrawing(e) {
-                drawing = true;
-                const rect = canvas.getBoundingClientRect();
-                lastX = e.clientX - rect.left;
-                lastY = e.clientY - rect.top;
-            }
-
-            function handleTouchStart(e) {
-                e.preventDefault();
-                drawing = true;
-                const rect = canvas.getBoundingClientRect();
-                lastX = e.touches[0].clientX - rect.left;
-                lastY = e.touches[0].clientY - rect.top;
-            }
-
-            function draw(e) {
-                if (!drawing) return;
-                const rect = canvas.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-                ctx.beginPath();
-                ctx.moveTo(lastX, lastY);
-                ctx.lineTo(x, y);
-                ctx.lineWidth = 2;
-                ctx.lineCap = 'round';
-                ctx.strokeStyle = '#000';
-                ctx.stroke();
-                lastX = x;
-                lastY = y;
-            }
-
-            function handleTouchMove(e) {
-                e.preventDefault();
-                if (!drawing) return;
-                const rect = canvas.getBoundingClientRect();
-                const x = e.touches[0].clientX - rect.left;
-                const y = e.touches[0].clientY - rect.top;
-                ctx.beginPath();
-                ctx.moveTo(lastX, lastY);
-                ctx.lineTo(x, y);
-                ctx.lineWidth = 2;
-                ctx.lineCap = 'round';
-                ctx.strokeStyle = '#000';
-                ctx.stroke();
-                lastX = x;
-                lastY = y;
-            }
-
-            function stopDrawing() {
-                drawing = false;
-            }
-        }
-
-        function clearSignature(canvasId) {
-            const canvas = document.getElementById(canvasId);
-            const ctx = canvas.getContext('2d');
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-        }
-
-        setupSignature('jockey-tecnico-signature');
-        setupSignature('jockey-cliente-signature');
-
-        // Cargar fotos
-        const photoInputs = ['photo1', 'photo2', 'photo3', 'photo4'];
-        const photoData = {};
-        photoInputs.forEach(id => {
-            const photoBox = document.getElementById(id);
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = 'image/*';
-            input.style.display = 'none';
-            input.onchange = function(e) {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        photoData[id] = e.target.result;
-                        photoBox.style.backgroundImage = `url(${e.target.result})`;
-                        photoBox.style.backgroundSize = 'cover';
-                        photoBox.textContent = '';
-                    };
-                    reader.readAsDataURL(file);
-                }
-            };
-            photoBox.appendChild(input);
-            photoBox.addEventListener('click', () => input.click());
-        });
-
-        // Obtener GPS y traducir a dirección
-        function getGPSLocation() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        const lat = position.coords.latitude;
-                        const lng = position.coords.longitude;
-                        document.getElementById('lugar-gps').value = `${lat.toFixed(2)}, ${lng.toFixed(2)}`;
-                        const geocoder = new google.maps.Geocoder();
-                        geocoder.geocode({ location: { lat, lng } }, (results, status) => {
-                            if (status === 'OK') {
-                                if (results[0]) {
-                                    alert('Dirección aproximada: ' + results[0].formatted_address);
-                                } else {
-                                    alert('No se encontró dirección para esta ubicación.');
-                                }
-                            } else {
-                                alert('Geocoder falló debido a: ' + status);
-                            }
-                        });
-                    },
-                    () => {
-                        alert('Error: No se pudo obtener la ubicación.');
-                    }
-                );
-            } else {
-                alert('Geolocalización no soportada por este navegador.');
-            }
-        }
-
-        // Exportar a PDF
-        async function exportToPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF({
-                orientation: 'portrait',
-                unit: 'mm',
-                format: 'a4'
+            doc.autoTable({
+                startY: yOffset,
+                head: [['Parámetro', 'Valor']],
+                body: data,
+                styles: {
+                    fontSize: 10,
+                    cellPadding: 2,
+                    valign: 'middle',
+                },
+                headStyles: {
+                    fillColor: [179, 197, 214],
+                    textColor: 40,
+                    halign: 'center',
+                    fontStyle: 'bold'
+                },
+                theme: 'grid',
+                margin: { left: 20, right: 20 }
             });
 
-            // Función para agregar encabezado y pie de página
-            function addHeaderFooter(pageNum) {
-                const logoImg = new Image();
-                logoImg.src = 'icons/banner.png';
-                doc.addImage(logoImg, 'PNG', 80, 10, 50, 20);
-                doc.setFontSize(14);
-                doc.setTextColor(0, 0, 255); // Azul fuerte para títulos
-                doc.text('Reporte de Mantenimiento - Sistemas de Bombeo', 20, 40);
-                doc.setFontSize(10);
-                doc.setTextColor(0, 0, 0);
-                doc.setFillColor(179, 197, 214);
-                doc.rect(20, 270, 170, 10, 'F');
-                doc.setTextColor(255, 255, 255);
-                doc.text('Certificados NFPA - Formato realizado por RL', 25, 276);
-                doc.text(document.getElementById('currentDateTime').textContent, 25, 280);
-                doc.text(`Página ${pageNum}`, 180, 280, { align: 'right' });
-            }
-
-            let y = 50;
-            let pageNum = 1;
-
-            // Agregar encabezado y pie de página de la primera página
-            addHeaderFooter(pageNum);
-
-            // Lugar
-            doc.setFont('helvetica', 'bold');
-            doc.setTextColor(0, 0, 255);
-            doc.text('Lugar', 20, y);
-            y += 5;
-            doc.setFont('helvetica', 'normal');
-            doc.setTextColor(0, 0, 0);
-            doc.text(`Posicionamiento GPS: ${document.getElementById('lugar-gps').value || 'No especificado'}`, 20, y);
-            y += 4;
-            doc.text(`Número de Contrato: ${document.getElementById('lugar-contrato').value || 'No especificado'}`, 20, y);
-            y += 4;
-            doc.text(`Nombre del Cliente: ${document.getElementById('lugar-cliente').value || 'No especificado'}`, 20, y);
-            y += 10;
-
-            // Bomba Jockey
-            doc.setFont('helvetica', 'bold');
-            doc.setTextColor(0, 0, 255);
-            doc.text('Bomba Jockey', 20, y);
-            y += 5;
-            doc.setFont('helvetica', 'normal');
-            doc.setTextColor(0, 0, 0);
-            doc.text(`V. Entrada L1-L2: ${document.getElementById('jockey-v-entrada-l1l2').value || 'No especificado'}`, 20, y);
-            y += 4;
-            doc.text(`V. Entrada L1-L3: ${document.getElementById('jockey-v-entrada-l1l3').value || 'No especificado'}`, 20, y);
-            y += 4;
-            doc.text(`V. Entrada L2-L3: ${document.getElementById('jockey-v-entrada-l2l3').value || 'No especificado'}`, 20, y);
-            y += 4;
-            doc.text(`V. Salida: ${document.getElementById('jockey-v-salida').value || 'No especificado'}`, 20, y);
-            y += 4;
-            doc.text(`Parámetros: ${document.getElementById('jockey-parametros').value || 'No especificado'}`, 20, y);
-            y += 4;
-            doc.text(`Lect. Inicio: ${document.getElementById('jockey-lecturas-inicio').value || 'No especificado'}`, 20, y);
-            y += 4;
-            doc.text(`Lect. Paro: ${document.getElementById('jockey-lecturas-paro').value || 'No especificado'}`, 20, y);
-            y += 4;
-            doc.text(`Amperaje L1: ${document.getElementById('jockey-amperaje-l1').value || 'No especificado'}`, 20, y);
-            y += 4;
-            doc.text(`Amperaje L2: ${document.getElementById('jockey-amperaje-l2').value || 'No especificado'}`, 20, y);
-            y += 4;
-            doc.text(`Amperaje L3: ${document.getElementById('jockey-amperaje-l3').value || 'No especificado'}`, 20, y);
-            y += 4;
-            doc.text(`Descarga PSI: ${document.getElementById('jockey-descarga').value || 'No especificado'}`, 20, y);
-            y += 10;
-
-            // Bomba Eléctrica
-            if (y > 250) {
-                doc.addPage();
-                pageNum++;
-                y = 50;
-                addHeaderFooter(pageNum);
-            }
-            doc.setFont('helvetica', 'bold');
-            doc.setTextColor(0, 0, 255);
-            doc.text('Bomba Eléctrica', 20, y);
-            y += 5;
-            doc.setFont('helvetica', 'normal');
-            doc.setTextColor(0, 0, 0);
-            doc.text(`V. Entrada: ${document.getElementById('electrica-v-entrada').value || 'No especificado'}`, 20, y);
-            y += 4;
-            doc.text(`V. Salida: ${document.getElementById('electrica-v-salida').value || 'No especificado'}`, 20, y);
-            y += 4;
-            doc.text(`Parámetros: ${document.getElementById('electrica-parametros').value || 'No especificado'}`, 20, y);
-            y += 4;
-            doc.text(`Lect. Inicio: ${document.getElementById('electrica-lecturas-inicio').value || 'No especificado'}`, 20, y);
-            y += 4;
-            doc.text(`Lect. Paro: ${document.getElementById('electrica-lecturas-paro').value || 'No especificado'}`, 20, y);
-            y += 4;
-            doc.text(`Amperaje L1: ${document.getElementById('electrica-amperaje-l1').value || 'No especificado'}`, 20, y);
-            y += 4;
-            doc.text(`Amperaje L2: ${document.getElementById('electrica-amperaje-l2').value || 'No especificado'}`, 20, y);
-            y += 4;
-            doc.text(`Amperaje L3: ${document.getElementById('electrica-amperaje-l3').value || 'No especificado'}`, 20, y);
-            y += 4;
-            doc.text(`Descarga PSI: ${document.getElementById('electrica-descarga').value || 'No especificado'}`, 20, y);
-            y += 10;
-
-            // Bomba Diesel
-            if (y > 250) {
-                doc.addPage();
-                pageNum++;
-                y = 50;
-                addHeaderFooter(pageNum);
-            }
-            doc.setFont('helvetica', 'bold');
-            doc.setTextColor(0, 0, 255);
-            doc.text('Bomba Diesel', 20, y);
-            y += 5;
-            doc.setFont('helvetica', 'normal');
-            doc.setTextColor(0, 0, 0);
-            doc.text(`Niveles Agua: ${document.getElementById('diesel-nivel-agua').value || 'No especificado'}`, 20, y);
-            y += 4;
-            doc.text(`Niveles Aceite: ${document.getElementById('diesel-nivel-aceite').value || 'No especificado'}`, 20, y);
-            y += 4;
-            doc.text(`Parámetros: ${document.getElementById('diesel-parametros').value || 'No especificado'}`, 20, y);
-            y += 4;
-            doc.text(`Diesel +3/4: ${document.getElementById('diesel-diesel-3cuarto').checked ? 'Sí' : 'No'}`, 20, y);
-            y += 4;
-            doc.text(`Diesel -3/4: ${document.getElementById('diesel-diesel-menos3cuarto').checked ? 'Sí' : 'No'}`, 20, y);
-            y += 4;
-            doc.text(`Litros faltan: ${document.getElementById('diesel-litros-faltan').value || 'No especificado'}`, 20, y);
-            y += 4;
-            doc.text(`Lect. Inicio: ${document.getElementById('diesel-lecturas-inicio').value || 'No especificado'}`, 20, y);
-            y += 4;
-            doc.text(`Lect. Paro: ${document.getElementById('diesel-lecturas-paro').value || 'No especificado'}`, 20, y);
-            y += 4;
-            doc.text(`Velocidad RPM: ${document.getElementById('diesel-velocidad').value || 'No especificado'}`, 20, y);
-            y += 4;
-            doc.text(`VAC: ${document.getElementById('diesel-vac').value || 'No especificado'}`, 20, y);
-            y += 4;
-            doc.text(`Pres. Aceite PSI: ${document.getElementById('diesel-presion-aceite').value || 'No especificado'}`, 20, y);
-            y += 4;
-            doc.text(`Temp. Inicial: ${document.getElementById('diesel-temp-inicial').value || 'No especificado'}`, 20, y);
-            y += 4;
-            doc.text(`Temp. Final: ${document.getElementById('diesel-temp-final').value || 'No especificado'}`, 20, y);
-            y += 4;
-            doc.text(`Hrs. Inicial: ${document.getElementById('diesel-hrs-inicial').value || 'No especificado'}`, 20, y);
-            y += 4;
-            doc.text(`Hrs. Final: ${document.getElementById('diesel-hrs-final').value || 'No especificado'}`, 20, y);
-            y += 4;
-            doc.text(`Observaciones: ${document.getElementById('diesel-observaciones').value || 'Ninguna'}`, 20, y);
-            y += 10;
-
-            // Revisión de Hidrantes
-            if (y > 250) {
-                doc.addPage();
-                pageNum++;
-                y = 50;
-                addHeaderFooter(pageNum);
-            }
-            doc.setFont('helvetica', 'bold');
-            doc.setTextColor(0, 0, 255);
-            doc.text('Revisión de Hidrantes', 20, y);
-            y += 5;
-            for (let i = 1; i <= hidranteCount; i++) {
-                doc.setFont('helvetica', 'normal');
-                doc.setTextColor(0, 0, 0);
-                doc.text(`Hidrante ${i}: ${document.getElementById(`hidrante-${i}-ok`).checked ? 'OK' : 'No OK'}`, 20, y);
-                y += 4;
-                doc.text(`Comentarios: ${document.getElementById(`hidrante-${i}-comentarios`).value || 'Ninguno'}`, 20, y);
-                y += 4;
-            }
-            y += 10;
-
-            // Fotos
-            if (y > 250) {
-                doc.addPage();
-                pageNum++;
-                y = 50;
-                addHeaderFooter(pageNum);
-            }
-            doc.setFont('helvetica', 'bold');
-            doc.setTextColor(0, 0, 255);
-            doc.text('Fotografías', 20, y);
-            y += 5;
-            const photoPromises = photoInputs.map(async (id) => {
-                if (photoData[id]) {
-                    const img = new Image();
-                    img.src = photoData[id];
-                    await new Promise(resolve => img.onload = resolve);
-                    doc.addImage(img, 'PNG', 20, y, 40, 30);
-                    y += 35;
-                    if (y > 250) {
-                        doc.addPage();
-                        pageNum++;
-                        y = 50;
-                        addHeaderFooter(pageNum);
-                    }
-                }
-            });
-            await Promise.all(photoPromises);
-            y += 10;
-
-            // Firmas
-            if (y > 250) {
-                doc.addPage();
-                pageNum++;
-                y = 50;
-                addHeaderFooter(pageNum);
-            }
-            doc.setFont('helvetica', 'bold');
-            doc.setTextColor(0, 0, 255);
-            doc.text('Firmas', 20, y);
-            y += 5;
-            doc.setFont('helvetica', 'normal');
-            doc.setTextColor(0, 0, 0);
-            doc.text(`Técnico: ${document.getElementById('jockey-tecnico').value || 'No especificado'}`, 20, y);
-            const tecnicoCanvas = document.getElementById('jockey-tecnico-signature');
-            if (tecnicoCanvas) {
-                y += 5;
-                const tecnicoImg = await html2canvas(tecnicoCanvas);
-                const tecnicoData = tecnicoImg.toDataURL('image/png');
-                doc.addImage(tecnicoData, 'PNG', 20, y, 80, 30);
-                y += 35;
-            }
-            doc.text(`Cliente: No disponible (Firma digital)`, 20, y);
-            const clienteCanvas = document.getElementById('jockey-cliente-signature');
-            if (clienteCanvas) {
-                y += 5;
-                const clienteImg = await html2canvas(clienteCanvas);
-                const clienteData = clienteImg.toDataURL('image/png');
-                doc.addImage(clienteData, 'PNG', 20, y, 80, 30);
-            }
-
-            doc.save('Reporte_Mantenimiento_Bombas.pdf');
+            yOffset = doc.lastAutoTable.finalY + 10;
         }
 
-        // Compartir por WhatsApp
-        function shareWhatsApp() {
-            const message = `Reporte de Mantenimiento - Sistemas de Bombeo\n\n` +
-                `Lugar:\n` +
-                `Posicionamiento GPS: ${document.getElementById('lugar-gps').value || 'No especificado'}\n` +
-                `Número de Contrato: ${document.getElementById('lugar-contrato').value || 'No especificado'}\n` +
-                `Nombre del Cliente: ${document.getElementById('lugar-cliente').value || 'No especificado'}\n\n` +
-                `Bomba Jockey:\n` +
-                `V. Entrada L1-L2: ${document.getElementById('jockey-v-entrada-l1l2').value || 'No especificado'}\n` +
-                `V. Entrada L1-L3: ${document.getElementById('jockey-v-entrada-l1l3').value || 'No especificado'}\n` +
-                `V. Entrada L2-L3: ${document.getElementById('jockey-v-entrada-l2l3').value || 'No especificado'}\n` +
-                `V. Salida: ${document.getElementById('jockey-v-salida').value || 'No especificado'}\n` +
-                `Parámetros: ${document.getElementById('jockey-parametros').value || 'No especificado'}\n` +
-                `Lect. Inicio: ${document.getElementById('jockey-lecturas-inicio').value || 'No especificado'}\n` +
-                `Lect. Paro: ${document.getElementById('jockey-lecturas-paro').value || 'No especificado'}\n` +
-                `Amperaje L1: ${document.getElementById('jockey-amperaje-l1').value || 'No especificado'}\n` +
-                `Amperaje L2: ${document.getElementById('jockey-amperaje-l2').value || 'No especificado'}\n` +
-                `Amperaje L3: ${document.getElementById('jockey-amperaje-l3').value || 'No especificado'}\n` +
-                `Descarga PSI: ${document.getElementById('jockey-descarga').value || 'No especificado'}\n\n` +
-                `Bomba Eléctrica:\n` +
-                `V. Entrada: ${document.getElementById('electrica-v-entrada').value || 'No especificado'}\n` +
-                `V. Salida: ${document.getElementById('electrica-v-salida').value || 'No especificado'}\n` +
-                `Parámetros: ${document.getElementById('electrica-parametros').value || 'No especificado'}\n` +
-                `Lect. Inicio: ${document.getElementById('electrica-lecturas-inicio').value || 'No especificado'}\n` +
-                `Lect. Paro: ${document.getElementById('electrica-lecturas-paro').value || 'No especificado'}\n` +
-                `Amperaje L1: ${document.getElementById('electrica-amperaje-l1').value || 'No especificado'}\n` +
-                `Amperaje L2: ${document.getElementById('electrica-amperaje-l2').value || 'No especificado'}\n` +
-                `Amperaje L3: ${document.getElementById('electrica-amperaje-l3').value || 'No especificado'}\n` +
-                `Descarga PSI: ${document.getElementById('electrica-descarga').value || 'No especificado'}\n\n` +
-                `Bomba Diesel:\n` +
-                `Niveles Agua: ${document.getElementById('diesel-nivel-agua').value || 'No especificado'}\n` +
-                `Niveles Aceite: ${document.getElementById('diesel-nivel-aceite').value || 'No especificado'}\n` +
-                `Parámetros: ${document.getElementById('diesel-parametros').value || 'No especificado'}\n` +
-                `Diesel +3/4: ${document.getElementById('diesel-diesel-3cuarto').checked ? 'Sí' : 'No'}\n` +
-                `Diesel -3/4: ${document.getElementById('diesel-diesel-menos3cuarto').checked ? 'Sí' : 'No'}\n` +
-                `Litros faltan: ${document.getElementById('diesel-litros-faltan').value || 'No especificado'}\n` +
-                `Lect. Inicio: ${document.getElementById('diesel-lecturas-inicio').value || 'No especificado'}\n` +
-                `Lect. Paro: ${document.getElementById('diesel-lecturas-paro').value || 'No especificado'}\n` +
-                `Velocidad RPM: ${document.getElementById('diesel-velocidad').value || 'No especificado'}\n` +
-                `VAC: ${document.getElementById('diesel-vac').value || 'No especificado'}\n` +
-                `Pres. Aceite PSI: ${document.getElementById('diesel-presion-aceite').value || 'No especificado'}\n` +
-                `Temp. Inicial: ${document.getElementById('diesel-temp-inicial').value || 'No especificado'}\n` +
-                `Temp. Final: ${document.getElementById('diesel-temp-final').value || 'No especificado'}\n` +
-                `Hrs. Inicial: ${document.getElementById('diesel-hrs-inicial').value || 'No especificado'}\n` +
-                `Hrs. Final: ${document.getElementById('diesel-hrs-final').value || 'No especificado'}\n` +
-                `Observaciones: ${document.getElementById('diesel-observaciones').value || 'Ninguna'}\n\n` +
-                `Revisión de Hidrantes:\n`;
-            for (let i = 1; i <= hidranteCount; i++) {
-                message += `Hidrante ${i}: ${document.getElementById(`hidrante-${i}-ok`).checked ? 'OK' : 'No OK'}\n` +
-                    `Comentarios: ${document.getElementById(`hidrante-${i}-comentarios`).value || 'Ninguno'}\n`;
-            }
-            message += `\nFirmas:\n` +
-                `Técnico: ${document.getElementById('jockey-tecnico').value || 'No especificado'}\n` +
-                `Cliente: No disponible (Firma digital)\n` +
-                `Generado el ${document.getElementById('currentDateTime').textContent}`;
+        // 🧾 Recolectar datos de cada sección
+        const jockeyData = [
+            ['V. Entrada L1-L2', document.getElementById('jockey-v-entrada-l1l2').value],
+            ['V. Entrada L1-L3', document.getElementById('jockey-v-entrada-l1l3').value],
+            ['V. Entrada L2-L3', document.getElementById('jockey-v-entrada-l2l3').value],
+            ['V. Salida', document.getElementById('jockey-v-salida').value],
+            ['Parámetros Inicio/Paro', document.getElementById('jockey-parametros').value],
+            ['Lectura Inicio', document.getElementById('jockey-lecturas-inicio').value],
+            ['Lectura Paro', document.getElementById('jockey-lecturas-paro').value],
+            ['Amperaje L1', document.getElementById('jockey-amperaje-l1').value],
+            ['Amperaje L2', document.getElementById('jockey-amperaje-l2').value],
+            ['Amperaje L3', document.getElementById('jockey-amperaje-l3').value],
+            ['Descarga PSI', document.getElementById('jockey-descarga').value]
+        ];
 
-            const encodedMessage = encodeURIComponent(message.substring(0, 1500));
-            window.open(`https://wa.me/?text=${encodedMessage}`, '_blank');
+        const electricaData = [
+            ['V. Entrada', document.getElementById('electrica-v-entrada').value],
+            ['V. Salida', document.getElementById('electrica-v-salida').value],
+            ['Parámetros Inicio/Paro', document.getElementById('electrica-parametros').value],
+            ['Lectura Inicio', document.getElementById('electrica-lecturas-inicio').value],
+            ['Lectura Paro', document.getElementById('electrica-lecturas-paro').value],
+            ['Amperaje L1', document.getElementById('electrica-amperaje-l1').value],
+            ['Amperaje L2', document.getElementById('electrica-amperaje-l2').value],
+            ['Amperaje L3', document.getElementById('electrica-amperaje-l3').value],
+            ['Descarga PSI', document.getElementById('electrica-descarga').value]
+        ];
+
+        const dieselData = [
+            ['Niveles Agua', document.getElementById('diesel-nivel-agua').value],
+            ['Niveles Aceite', document.getElementById('diesel-nivel-aceite').value],
+            ['Parámetros Inicio/Paro', document.getElementById('diesel-parametros').value],
+            ['Diesel +3/4', document.getElementById('diesel-diesel-3cuarto').checked ? 'Sí' : 'No'],
+            ['Diesel -3/4', document.getElementById('diesel-diesel-menos3cuarto').checked ? 'Sí' : 'No'],
+            ['Litros faltan', document.getElementById('diesel-litros-faltan').value],
+            ['Lectura Inicio', document.getElementById('diesel-lecturas-inicio').value],
+            ['Lectura Paro', document.getElementById('diesel-lecturas-paro').value],
+            ['Velocidad RPM', document.getElementById('diesel-velocidad').value],
+            ['VAC', document.getElementById('diesel-vac').value],
+            ['Presión Aceite', document.getElementById('diesel-presion-aceite').value],
+            ['Temperatura Inicial (°C)', document.getElementById('diesel-temp-inicial').value],
+            ['Temperatura Final (°C)', document.getElementById('diesel-temp-final').value],
+            ['Hrs. Inicial', document.getElementById('diesel-hrs-inicial').value],
+            ['Hrs. Final', document.getElementById('diesel-hrs-final').value],
+            ['Observaciones', document.getElementById('diesel-observaciones').value || 'Ninguna']
+        ];
+
+        // 🚰 Hidrantes dinámicos
+        const hidrantes = [];
+        const totalHidrantes = document.querySelectorAll('[id^="hidrante-"][id$="-ok"]').length;
+        for (let i = 1; i <= totalHidrantes; i++) {
+            hidrantes.push([
+                `Hidrante ${i}`,
+                (document.getElementById(`hidrante-${i}-ok`).checked ? 'OK' : 'No OK') +
+                ' — ' + (document.getElementById(`hidrante-${i}-comentarios`).value || 'Sin comentarios')
+            ]);
         }
-    </script>
-</body>
-</html>
+
+        // 👨‍🔧 Firma técnico
+        const tecnico = document.getElementById('jockey-tecnico').value;
+        const tecnicoCanvas = document.getElementById('jockey-tecnico-signature');
+        const tecnicoSignature = await html2canvas(tecnicoCanvas);
+        const tecnicoImg = tecnicoSignature.toDataURL('image/png');
+
+        // 🧷 Agregar cada sección al PDF
+        addSection('Bomba Jockey', jockeyData);
+        addSection('Bomba Eléctrica', electricaData);
+        addSection('Bomba Diesel', dieselData);
+        addSection('Revisión de Hidrantes', hidrantes);
+        addSection('Técnico', [['Nombre', tecnico]]);
+
+        doc.addImage(tecnicoImg, 'PNG', 20, yOffset, 80, 30);
+        yOffset += 40;
+
+        // ✅ Guardar el PDF
+        doc.save('Reporte_Mantenimiento.pdf');
+    }
+</script>
