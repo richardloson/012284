@@ -1,0 +1,650 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mantenimiento de Sistemas de Bombeo</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .container {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 800px;
+        }
+        .header img {
+            max-height: 100px;
+            display: block;
+            margin: 0 auto 20px;
+        }
+        fieldset {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+        }
+        legend {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #2d3748;
+            padding: 0 10px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #4a5568;
+        }
+        input, select, textarea, .signature-box {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .input-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .signature-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .signature-box {
+            height: 100px;
+            border: 2px dashed #4a5568;
+            background: #f9fafb;
+            text-align: center;
+            line-height: 100px;
+            cursor: pointer;
+        }
+        .photo-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin: 10px 0;
+        }
+        .photo-box {
+            height: 100px;
+            border: 2px dashed #4a5568;
+            background: #f9fafb;
+            text-align: center;
+            line-height: 100px;
+            cursor: pointer;
+        }
+        button {
+            padding: 10px 20px;
+            margin-right: 10px;
+            background-color: #2d3748;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #1a202c;
+        }
+        .button-group {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            background: #b3c5d6;
+            padding: 10px;
+            border-radius: 4px;
+            color: #ffffff;
+        }
+        @media (max-width: 600px) {
+            .input-group, .signature-row, .photo-row {
+                grid-template-columns: 1fr;
+            }
+            button {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+            .button-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="icons/banner.png" alt="Logo">
+        </div>
+        <form id="mantenimientoForm">
+            <fieldset>
+                <legend>Lugar</legend>
+                <div>
+                    <label for="lugar-gps">Posicionamiento GPS</label>
+                    <input type="text" id="lugar-gps" placeholder="Ej: 19.4326, -99.1332">
+                </div>
+                <div>
+                    <label for="lugar-contrato">Número de Contrato</label>
+                    <input type="text" id="lugar-contrato" required>
+                </div>
+                <div>
+                    <label for="lugar-cliente">Cliente</label>
+                    <input type="text" id="lugar-cliente" required>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>Bomba Jockey</legend>
+                <div class="input-group">
+                    <div>
+                        <label for="jockey-v-entrada-l1l2">V. Entrada (L1-L2)</label>
+                        <input type="number" id="jockey-v-entrada-l1l2" step="0.01">
+                    </div>
+                    <div>
+                        <label for="jockey-v-entrada-l1l3">V. Entrada (L1-L3)</label>
+                        <input type="number" id="jockey-v-entrada-l1l3" step="0.01">
+                    </div>
+                    <div>
+                        <label for="jockey-v-entrada-l2l3">V. Entrada (L2-L3)</label>
+                        <input type="number" id="jockey-v-entrada-l2l3" step="0.01">
+                    </div>
+                    <div>
+                        <label for="jockey-v-salida">V. Salida</label>
+                        <input type="number" id="jockey-v-salida" step="0.01">
+                    </div>
+                </div>
+                <div>
+                    <label for="jockey-parametros">Parámetros: Inicio / Paro</label>
+                    <input type="text" id="jockey-parametros">
+                </div>
+                <div class="input-group">
+                    <div>
+                        <label for="jockey-lecturas-inicio">Lecturas: Inicio</label>
+                        <input type="number" id="jockey-lecturas-inicio" step="0.01">
+                    </div>
+                    <div>
+                        <label for="jockey-lecturas-paro">Lecturas: Paro</label>
+                        <input type="number" id="jockey-lecturas-paro" step="0.01">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <div>
+                        <label for="jockey-amperaje-l1">Amperaje L1</label>
+                        <input type="number" id="jockey-amperaje-l1" step="0.01">
+                    </div>
+                    <div>
+                        <label for="jockey-amperaje-l2">Amperaje L2</label>
+                        <input type="number" id="jockey-amperaje-l2" step="0.01">
+                    </div>
+                    <div>
+                        <label for="jockey-amperaje-l3">Amperaje L3</label>
+                        <input type="number" id="jockey-amperaje-l3" step="0.01">
+                    </div>
+                </div>
+                <div>
+                    <label for="jockey-descarga">Descarga PSI</label>
+                    <input type="number" id="jockey-descarga" step="0.01">
+                </div>
+                <div>
+                    <label for="jockey-tecnico">Técnico</label>
+                    <input type="text" id="jockey-tecnico" required>
+                </div>
+                <div class="signature-row">
+                    <div>
+                        <label for="jockey-tecnico-signature">Firma Técnico</label>
+                        <div class="signature-box" id="jockey-tecnico-signature">Firma aquí</div>
+                    </div>
+                    <div>
+                        <label for="jockey-cliente-signature">Firma Cliente</label>
+                        <div class="signature-box" id="jockey-cliente-signature">Firma aquí</div>
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>Bomba Eléctrica</legend>
+                <div class="input-group">
+                    <div>
+                        <label for="electrica-v-entrada">V. Entrada</label>
+                        <input type="number" id="electrica-v-entrada" step="0.01">
+                    </div>
+                    <div>
+                        <label for="electrica-v-salida">V. Salida</label>
+                        <input type="number" id="electrica-v-salida" step="0.01">
+                    </div>
+                </div>
+                <div>
+                    <label for="electrica-parametros">Parámetros: Inicio / Paro</label>
+                    <input type="text" id="electrica-parametros">
+                </div>
+                <div class="input-group">
+                    <div>
+                        <label for="electrica-lecturas-inicio">Lecturas: Inicio</label>
+                        <input type="number" id="electrica-lecturas-inicio" step="0.01">
+                    </div>
+                    <div>
+                        <label for="electrica-lecturas-paro">Lecturas: Paro</label>
+                        <input type="number" id="electrica-lecturas-paro" step="0.01">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <div>
+                        <label for="electrica-amperaje-l1">Amperaje L1</label>
+                        <input type="number" id="electrica-amperaje-l1" step="0.01">
+                    </div>
+                    <div>
+                        <label for="electrica-amperaje-l2">Amperaje L2</label>
+                        <input type="number" id="electrica-amperaje-l2" step="0.01">
+                    </div>
+                    <div>
+                        <label for="electrica-amperaje-l3">Amperaje L3</label>
+                        <input type="number" id="electrica-amperaje-l3" step="0.01">
+                    </div>
+                </div>
+                <div>
+                    <label for="electrica-descarga">Descarga PSI</label>
+                    <input type="number" id="electrica-descarga" step="0.01">
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>Bomba Diesel</legend>
+                <div class="input-group">
+                    <div>
+                        <label for="diesel-nivel-agua">Niveles: Agua</label>
+                        <input type="number" id="diesel-nivel-agua" step="0.01">
+                    </div>
+                    <div>
+                        <label for="diesel-nivel-aceite">Niveles: Aceite</label>
+                        <input type="number" id="diesel-nivel-aceite" step="0.01">
+                    </div>
+                </div>
+                <div>
+                    <label for="diesel-parametros">Parámetros: Inicio / Paro</label>
+                    <input type="text" id="diesel-parametros">
+                </div>
+                <div class="input-group">
+                    <div>
+                        <label for="diesel-diesel-3cuarto">Diesel: +3/4</label>
+                        <input type="checkbox" id="diesel-diesel-3cuarto">
+                    </div>
+                    <div>
+                        <label for="diesel-diesel-menos3cuarto">Diesel: -3/4</label>
+                        <input type="checkbox" id="diesel-diesel-menos3cuarto">
+                    </div>
+                    <div>
+                        <label for="diesel-litros-faltan">Litros faltan</label>
+                        <input type="number" id="diesel-litros-faltan" step="0.01">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <div>
+                        <label for="diesel-lecturas-inicio">Lecturas: Inicio</label>
+                        <input type="number" id="diesel-lecturas-inicio" step="0.01">
+                    </div>
+                    <div>
+                        <label for="diesel-lecturas-paro">Lecturas: Paro</label>
+                        <input type="number" id="diesel-lecturas-paro" step="0.01">
+                    </div>
+                </div>
+                <div>
+                    <label for="diesel-velocidad">Velocidad RPM</label>
+                    <input type="number" id="diesel-velocidad" step="0.01">
+                </div>
+                <div>
+                    <label for="diesel-vac">VAC</label>
+                    <input type="number" id="diesel-vac" step="0.01">
+                </div>
+                <div>
+                    <label for="diesel-presion-aceite">Presión de aceite PSI</label>
+                    <input type="number" id="diesel-presion-aceite" step="0.01">
+                </div>
+                <div class="input-group">
+                    <div>
+                        <label for="diesel-temp-inicial">Temperatura Inicial (°C)</label>
+                        <input type="number" id="diesel-temp-inicial" step="0.01">
+                    </div>
+                    <div>
+                        <label for="diesel-temp-final">Temperatura Final (°C)</label>
+                        <input type="number" id="diesel-temp-final" step="0.01">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <div>
+                        <label for="diesel-hrs-inicial">Horas Inicial</label>
+                        <input type="number" id="diesel-hrs-inicial" step="0.01">
+                    </div>
+                    <div>
+                        <label for="diesel-hrs-final">Horas Final</label>
+                        <input type="number" id="diesel-hrs-final" step="0.01">
+                    </div>
+                </div>
+                <div>
+                    <label for="diesel-observaciones">Observaciones</label>
+                    <textarea id="diesel-observaciones" rows="4"></textarea>
+                </div>
+            </fieldset>
+
+            <fieldset id="hidrantes-section">
+                <legend>Revisión de Hidrantes</legend>
+                <div class="input-group">
+                    <div>
+                        <label>Hidrante 1</label>
+                        <input type="checkbox" id="hidrante-1-ok"> OK
+                        <input type="text" id="hidrante-1-comentarios" placeholder="Comentarios">
+                    </div>
+                </div>
+                <button type="button" onclick="addHidrante()">Agregar otro hidrante</button>
+            </fieldset>
+
+            <div class="photo-row">
+                <div class="photo-box" id="photo1">Foto 1</div>
+                <div class="photo-box" id="photo2">Foto 2</div>
+                <div class="photo-box" id="photo3">Foto 3</div>
+                <div class="photo-box" id="photo4">Foto 4</div>
+            </div>
+        </form>
+        <div class="button-group">
+            <button onclick="exportToPDF()">Exportar a PDF</button>
+            <button onclick="shareWhatsApp()">Compartir por WhatsApp</button>
+        </div>
+        <div class="footer">
+            <p>Certificados NFPA - Formato realizado por RL</p>
+        </div>
+    </div>
+
+    <script>
+        // Establecer fecha y hora dinámica
+        function setCurrentDateTime() {
+            const now = new Date();
+            const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true };
+            document.getElementById('currentDateTime').textContent = now.toLocaleString('es-MX', options);
+        }
+        setCurrentDateTime();
+
+        // Agregar otro hidrante
+        let hidranteCount = 1;
+        function addHidrante() {
+            hidranteCount++;
+            const hidrantesSection = document.getElementById('hidrantes-section');
+            const newHidrante = document.createElement('div');
+            newHidrante.className = 'input-group';
+            newHidrante.innerHTML = `
+                <div>
+                    <label>Hidrante ${hidranteCount}</label>
+                    <input type="checkbox" id="hidrante-${hidranteCount}-ok"> OK
+                    <input type="text" id="hidrante-${hidranteCount}-comentarios" placeholder="Comentarios">
+                </div>
+            `;
+            hidrantesSection.insertBefore(newHidrante, hidrantesSection.lastElementChild);
+        }
+
+        // Exportar a PDF
+        function exportToPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({
+                orientation: 'portrait',
+                unit: 'mm',
+                format: 'letter'
+            });
+            let y = 10;
+
+            // Logo
+            const logoImg = new Image();
+            logoImg.src = 'icons/banner.png';
+            doc.addImage(logoImg, 'PNG', 80, 10, 50, 30);
+
+            // Título
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(16);
+            doc.text('Reporte de Mantenimiento - Sistemas de Bombeo', 20, 50);
+            y = 60;
+
+            // Lugar
+            doc.setFont('helvetica', 'bold');
+            doc.text('Lugar', 20, y);
+            y += 5;
+            doc.setFont('helvetica', 'normal');
+            doc.text(`Posicionamiento GPS: ${document.getElementById('lugar-gps').value || 'No especificado'}`, 20, y);
+            y += 5;
+            doc.text(`Número de Contrato: ${document.getElementById('lugar-contrato').value || 'No especificado'}`, 20, y);
+            y += 5;
+            doc.text(`Cliente: ${document.getElementById('lugar-cliente').value || 'No especificado'}`, 20, y);
+            y += 10;
+
+            // Bomba Jockey
+            doc.setFont('helvetica', 'bold');
+            doc.text('Bomba Jockey', 20, y);
+            y += 5;
+            doc.setFont('helvetica', 'normal');
+            doc.text(`V. Entrada (L1-L2): ${document.getElementById('jockey-v-entrada-l1l2').value || 'No especificado'}`, 20, y);
+            y += 5;
+            doc.text(`V. Entrada (L1-L3): ${document.getElementById('jockey-v-entrada-l1l3').value || 'No especificado'}`, 20, y);
+            y += 5;
+            doc.text(`V. Entrada (L2-L3): ${document.getElementById('jockey-v-entrada-l2l3').value || 'No especificado'}`, 20, y);
+            y += 5;
+            doc.text(`V. Salida: ${document.getElementById('jockey-v-salida').value || 'No especificado'}`, 20, y);
+            y += 5;
+            doc.text(`Parámetros: ${document.getElementById('jockey-parametros').value || 'No especificado'}`, 20, y);
+            y += 5;
+            doc.text(`Lecturas Inicio: ${document.getElementById('jockey-lecturas-inicio').value || 'No especificado'}`, 20, y);
+            y += 5;
+            doc.text(`Lecturas Paro: ${document.getElementById('jockey-lecturas-paro').value || 'No especificado'}`, 20, y);
+            y += 5;
+            doc.text(`Amperaje L1: ${document.getElementById('jockey-amperaje-l1').value || 'No especificado'}`, 20, y);
+            y += 5;
+            doc.text(`Amperaje L2: ${document.getElementById('jockey-amperaje-l2').value || 'No especificado'}`, 20, y);
+            y += 5;
+            doc.text(`Amperaje L3: ${document.getElementById('jockey-amperaje-l3').value || 'No especificado'}`, 20, y);
+            y += 5;
+            doc.text(`Descarga PSI: ${document.getElementById('jockey-descarga').value || 'No especificado'}`, 20, y);
+            y += 5;
+            doc.text(`Técnico: ${document.getElementById('jockey-tecnico').value || 'No especificado'}`, 20, y);
+            y += 10;
+
+            // Bomba Eléctrica
+            doc.setFont('helvetica', 'bold');
+            doc.text('Bomba Eléctrica', 20, y);
+            y += 5;
+            doc.setFont('helvetica', 'normal');
+            doc.text(`V. Entrada: ${document.getElementById('electrica-v-entrada').value || 'No especificado'}`, 20, y);
+            y += 5;
+            doc.text(`V. Salida: ${document.getElementById('electrica-v-salida').value || 'No especificado'}`, 20, y);
+            y += 5;
+            doc.text(`Parámetros: ${document.getElementById('electrica-parametros').value || 'No especificado'}`, 20, y);
+            y += 5;
+            doc.text(`Lecturas Inicio: ${document.getElementById('electrica-lecturas-inicio').value || 'No especificado'}`, 20, y);
+            y += 5;
+            doc.text(`Lecturas Paro: ${document.getElementById('electrica-lecturas-paro').value || 'No especificado'}`, 20, y);
+            y += 5;
+            doc.text(`Amperaje L1: ${document.getElementById('electrica-amperaje-l1').value || 'No especificado'}`, 20, y);
+            y += 5;
+            doc.text(`Amperaje L2: ${document.getElementById('electrica-amperaje-l2').value || 'No especificado'}`, 20, y);
+            y += 5;
+            doc.text(`Amperaje L3: ${document.getElementById('electrica-amperaje-l3').value || 'No especificado'}`, 20, y);
+            y += 5;
+            doc.text(`Descarga PSI: ${document.getElementById('electrica-descarga').value || 'No especificado'}`, 20, y);
+            y += 10;
+
+            // Bomba Diesel
+            doc.setFont('helvetica', 'bold');
+            doc.text('Bomba Diesel', 20, y);
+            y += 5;
+            doc.setFont('helvetica', 'normal');
+            doc.text(`Niveles Agua: ${document.getElementById('diesel-nivel-agua').value || 'No especificado'}`, 20, y);
+            y += 5;
+            doc.text(`Niveles Aceite: ${document.getElementById('diesel-nivel-aceite').value || 'No especificado'}`, 20, y);
+            y += 5;
+            doc.text(`Parámetros: ${document.getElementById('diesel-parametros').value || 'No especificado'}`, 20, y);
+            y += 5;
+            doc.text(`Diesel +3/4: ${document.getElementById('diesel-diesel-3cuarto').checked ? 'Sí' : 'No'}`, 20, y);
+            y += 5;
+            doc.text(`Diesel -3/4: ${document.getElementById('diesel-diesel-menos3cuarto').checked ? 'Sí' : 'No'}`, 20, y);
+            y += 5;
+            doc.text(`Litros faltan: ${document.getElementById('diesel-litros-faltan').value || 'No especificado'}`, 20, y);
+            y += 5;
+            doc.text(`Lecturas Inicio: ${document.getElementById('diesel-lecturas-inicio').value || 'No especificado'}`, 20, y);
+            y += 5;
+            doc.text(`Lecturas Paro: ${document.getElementById('diesel-lecturas-paro').value || 'No especificado'}`, 20, y);
+            y += 5;
+            doc.text(`Velocidad RPM: ${document.getElementById('diesel-velocidad').value || 'No especificado'}`, 20, y);
+            y += 5;
+            doc.text(`VAC: ${document.getElementById('diesel-vac').value || 'No especificado'}`, 20, y);
+            y += 5;
+            doc.text(`Presión de aceite PSI: ${document.getElementById('diesel-presion-aceite').value || 'No especificado'}`, 20, y);
+            y += 5;
+            doc.text(`Temp. Inicial: ${document.getElementById('diesel-temp-inicial').value || 'No especificado'}`, 20, y);
+            y += 5;
+            doc.text(`Temp. Final: ${document.getElementById('diesel-temp-final').value || 'No especificado'}`, 20, y);
+            y += 5;
+            doc.text(`Hrs. Inicial: ${document.getElementById('diesel-hrs-inicial').value || 'No especificado'}`, 20, y);
+            y += 5;
+            doc.text(`Hrs. Final: ${document.getElementById('diesel-hrs-final').value || 'No especificado'}`, 20, y);
+            y += 5;
+            doc.text(`Observaciones: ${document.getElementById('diesel-observaciones').value || 'Ninguna'}`, 20, y);
+            y += 10;
+
+            // Revisión de Hidrantes
+            doc.setFont('helvetica', 'bold');
+            doc.text('Revisión de Hidrantes', 20, y);
+            y += 5;
+            for (let i = 1; i <= hidranteCount; i++) {
+                doc.setFont('helvetica', 'normal');
+                doc.text(`Hidrante ${i}: ${document.getElementById(`hidrante-${i}-ok`).checked ? 'OK' : 'No OK'}`, 20, y);
+                y += 5;
+                doc.text(`Comentarios: ${document.getElementById(`hidrante-${i}-comentarios`).value || 'Ninguno'}`, 20, y);
+                y += 5;
+            }
+            y += 10;
+
+            // Fotos (simulación de espacio)
+            doc.setFont('helvetica', 'bold');
+            doc.text('Fotografías', 20, y);
+            y += 5;
+            // Nota: Las fotos reales requerirían canvas o imágenes cargadas, aquí solo se reserva espacio
+            y += 100; // Espacio aproximado para 4 fotos
+
+            // Pie de página
+            doc.setFontSize(10);
+            doc.setFillColor(179, 197, 214);
+            doc.rect(20, 270, 170, 10, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.text('Certificados NFPA - Formato realizado por RL', 25, 276);
+
+            doc.save('Reporte_Mantenimiento_Bombas.pdf');
+        }
+
+        // Compartir por WhatsApp
+        function shareWhatsApp() {
+            const message = `Reporte de Mantenimiento - Sistemas de Bombeo\n\n` +
+                `Lugar:\n` +
+                `Posicionamiento GPS: ${document.getElementById('lugar-gps').value || 'No especificado'}\n` +
+                `Número de Contrato: ${document.getElementById('lugar-contrato').value || 'No especificado'}\n` +
+                `Cliente: ${document.getElementById('lugar-cliente').value || 'No especificado'}\n\n` +
+                `Bomba Jockey:\n` +
+                `V. Entrada (L1-L2): ${document.getElementById('jockey-v-entrada-l1l2').value || 'No especificado'}\n` +
+                `V. Entrada (L1-L3): ${document.getElementById('jockey-v-entrada-l1l3').value || 'No especificado'}\n` +
+                `V. Entrada (L2-L3): ${document.getElementById('jockey-v-entrada-l2l3').value || 'No especificado'}\n` +
+                `V. Salida: ${document.getElementById('jockey-v-salida').value || 'No especificado'}\n` +
+                `Parámetros: ${document.getElementById('jockey-parametros').value || 'No especificado'}\n` +
+                `Lecturas Inicio: ${document.getElementById('jockey-lecturas-inicio').value || 'No especificado'}\n` +
+                `Lecturas Paro: ${document.getElementById('jockey-lecturas-paro').value || 'No especificado'}\n` +
+                `Amperaje L1: ${document.getElementById('jockey-amperaje-l1').value || 'No especificado'}\n` +
+                `Amperaje L2: ${document.getElementById('jockey-amperaje-l2').value || 'No especificado'}\n` +
+                `Amperaje L3: ${document.getElementById('jockey-amperaje-l3').value || 'No especificado'}\n` +
+                `Descarga PSI: ${document.getElementById('jockey-descarga').value || 'No especificado'}\n` +
+                `Técnico: ${document.getElementById('jockey-tecnico').value || 'No especificado'}\n\n` +
+                `Bomba Eléctrica:\n` +
+                `V. Entrada: ${document.getElementById('electrica-v-entrada').value || 'No especificado'}\n` +
+                `V. Salida: ${document.getElementById('electrica-v-salida').value || 'No especificado'}\n` +
+                `Parámetros: ${document.getElementById('electrica-parametros').value || 'No especificado'}\n` +
+                `Lecturas Inicio: ${document.getElementById('electrica-lecturas-inicio').value || 'No especificado'}\n` +
+                `Lecturas Paro: ${document.getElementById('electrica-lecturas-paro').value || 'No especificado'}\n` +
+                `Amperaje L1: ${document.getElementById('electrica-amperaje-l1').value || 'No especificado'}\n` +
+                `Amperaje L2: ${document.getElementById('electrica-amperaje-l2').value || 'No especificado'}\n` +
+                `Amperaje L3: ${document.getElementById('electrica-amperaje-l3').value || 'No especificado'}\n` +
+                `Descarga PSI: ${document.getElementById('electrica-descarga').value || 'No especificado'}\n\n` +
+                `Bomba Diesel:\n` +
+                `Niveles Agua: ${document.getElementById('diesel-nivel-agua').value || 'No especificado'}\n` +
+                `Niveles Aceite: ${document.getElementById('diesel-nivel-aceite').value || 'No especificado'}\n` +
+                `Parámetros: ${document.getElementById('diesel-parametros').value || 'No especificado'}\n` +
+                `Diesel +3/4: ${document.getElementById('diesel-diesel-3cuarto').checked ? 'Sí' : 'No'}\n` +
+                `Diesel -3/4: ${document.getElementById('diesel-diesel-menos3cuarto').checked ? 'Sí' : 'No'}\n` +
+                `Litros faltan: ${document.getElementById('diesel-litros-faltan').value || 'No especificado'}\n` +
+                `Lecturas Inicio: ${document.getElementById('diesel-lecturas-inicio').value || 'No especificado'}\n` +
+                `Lecturas Paro: ${document.getElementById('diesel-lecturas-paro').value || 'No especificado'}\n` +
+                `Velocidad RPM: ${document.getElementById('diesel-velocidad').value || 'No especificado'}\n` +
+                `VAC: ${document.getElementById('diesel-vac').value || 'No especificado'}\n` +
+                `Presión de aceite PSI: ${document.getElementById('diesel-presion-aceite').value || 'No especificado'}\n` +
+                `Temp. Inicial: ${document.getElementById('diesel-temp-inicial').value || 'No especificado'}\n` +
+                `Temp. Final: ${document.getElementById('diesel-temp-final').value || 'No especificado'}\n` +
+                `Hrs. Inicial: ${document.getElementById('diesel-hrs-inicial').value || 'No especificado'}\n` +
+                `Hrs. Final: ${document.getElementById('diesel-hrs-final').value || 'No especificado'}\n` +
+                `Observaciones: ${document.getElementById('diesel-observaciones').value || 'Ninguna'}\n\n` +
+                `Revisión de Hidrantes:\n`;
+            for (let i = 1; i <= hidranteCount; i++) {
+                message += `Hidrante ${i}: ${document.getElementById(`hidrante-${i}-ok`).checked ? 'OK' : 'No OK'}\n` +
+                    `Comentarios: ${document.getElementById(`hidrante-${i}-comentarios`).value || 'Ninguno'}\n`;
+            }
+            message += `\nGenerado el ${document.getElementById('currentDateTime').textContent}`;
+
+            const encodedMessage = encodeURIComponent(message.substring(0, 1500));
+            window.open(`https://wa.me/?text=${encodedMessage}`, '_blank');
+        }
+    </script>
+</body>
+</html>
