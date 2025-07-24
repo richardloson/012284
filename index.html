@@ -44,6 +44,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mantenimiento de Sistemas de Bombeo</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=geocoding"></script>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -158,7 +160,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <img src="icons/banner.png" alt="Logo">
+            <img src="icons/banner.png" alt="Logo" id="header-logo">
         </div>
         <form id="mantenimientoForm">
             <fieldset>
@@ -172,8 +174,11 @@
                     <input type="text" id="lugar-contrato" required>
                 </div>
                 <div>
-                    <label for="lugar-cliente">Cliente</label>
+                    <label for="lugar-cliente">Nombre del Cliente</label>
                     <input type="text" id="lugar-cliente" required>
+                </div>
+                <div>
+                    <button type="button" onclick="getGPSLocation()">Obtener GPS y Dirección</button>
                 </div>
             </fieldset>
 
@@ -400,7 +405,7 @@
         </div>
         <div class="footer">
             <p>Certificados NFPA - Formato realizado por RL</p>
-            <p id="currentDateTime">24 de julio de 2025, 03:43 PM</p>
+            <p id="currentDateTime">24 de julio de 2025, 03:55 PM</p>
         </div>
     </div>
 
@@ -511,6 +516,7 @@
 
         // Cargar fotos
         const photoInputs = ['photo1', 'photo2', 'photo3', 'photo4'];
+        const photoData = {};
         photoInputs.forEach(id => {
             const photoBox = document.getElementById(id);
             const input = document.createElement('input');
@@ -522,6 +528,7 @@
                 if (file) {
                     const reader = new FileReader();
                     reader.onload = function(e) {
+                        photoData[id] = e.target.result;
                         photoBox.style.backgroundImage = `url(${e.target.result})`;
                         photoBox.style.backgroundSize = 'cover';
                         photoBox.textContent = '';
@@ -533,44 +540,90 @@
             photoBox.addEventListener('click', () => input.click());
         });
 
+        // Obtener GPS y traducir a dirección
+        function getGPSLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        document.getElementById('lugar-gps').value = `${lat.toFixed(2)}, ${lng.toFixed(2)}`;
+                        const geocoder = new google.maps.Geocoder();
+                        geocoder.geocode({ location: { lat, lng } }, (results, status) => {
+                            if (status === 'OK') {
+                                if (results[0]) {
+                                    alert('Dirección aproximada: ' + results[0].formatted_address);
+                                } else {
+                                    alert('No se encontró dirección para esta ubicación.');
+                                }
+                            } else {
+                                alert('Geocoder falló debido a: ' + status);
+                            }
+                        });
+                    },
+                    () => {
+                        alert('Error: No se pudo obtener la ubicación.');
+                    }
+                );
+            } else {
+                alert('Geolocalización no soportada por este navegador.');
+            }
+        }
+
         // Exportar a PDF
-        function exportToPDF() {
+        async function exportToPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({
                 orientation: 'portrait',
                 unit: 'mm',
-                format: 'letter'
+                format: 'a4'
             });
-            let y = 10;
 
-            // Logo
-            const logoImg = new Image();
-            logoImg.src = 'icons/banner.png';
-            doc.addImage(logoImg, 'PNG', 80, 10, 50, 20);
+            // Función para agregar encabezado y pie de página
+            function addHeaderFooter(pageNum) {
+                const logoImg = new Image();
+                logoImg.src = 'icons/banner.png';
+                doc.addImage(logoImg, 'PNG', 80, 10, 50, 20);
+                doc.setFontSize(14);
+                doc.setTextColor(0, 0, 255); // Azul fuerte para títulos
+                doc.text('Reporte de Mantenimiento - Sistemas de Bombeo', 20, 40);
+                doc.setFontSize(10);
+                doc.setTextColor(0, 0, 0);
+                doc.setFillColor(179, 197, 214);
+                doc.rect(20, 270, 170, 10, 'F');
+                doc.setTextColor(255, 255, 255);
+                doc.text('Certificados NFPA - Formato realizado por RL', 25, 276);
+                doc.text(document.getElementById('currentDateTime').textContent, 25, 280);
+                doc.text(`Página ${pageNum}`, 180, 280, { align: 'right' });
+            }
 
-            // Título
-            doc.setFont('helvetica', 'bold');
-            doc.setFontSize(14);
-            doc.text('Reporte de Mantenimiento - Sistemas de Bombeo', 20, 40);
-            y = 50;
+            let y = 50;
+            let pageNum = 1;
+
+            // Agregar encabezado y pie de página de la primera página
+            addHeaderFooter(pageNum);
 
             // Lugar
             doc.setFont('helvetica', 'bold');
+            doc.setTextColor(0, 0, 255);
             doc.text('Lugar', 20, y);
             y += 5;
             doc.setFont('helvetica', 'normal');
+            doc.setTextColor(0, 0, 0);
             doc.text(`Posicionamiento GPS: ${document.getElementById('lugar-gps').value || 'No especificado'}`, 20, y);
-            y += 5;
+            y += 4;
             doc.text(`Número de Contrato: ${document.getElementById('lugar-contrato').value || 'No especificado'}`, 20, y);
-            y += 5;
-            doc.text(`Cliente: ${document.getElementById('lugar-cliente').value || 'No especificado'}`, 20, y);
+            y += 4;
+            doc.text(`Nombre del Cliente: ${document.getElementById('lugar-cliente').value || 'No especificado'}`, 20, y);
             y += 10;
 
             // Bomba Jockey
             doc.setFont('helvetica', 'bold');
+            doc.setTextColor(0, 0, 255);
             doc.text('Bomba Jockey', 20, y);
             y += 5;
             doc.setFont('helvetica', 'normal');
+            doc.setTextColor(0, 0, 0);
             doc.text(`V. Entrada L1-L2: ${document.getElementById('jockey-v-entrada-l1l2').value || 'No especificado'}`, 20, y);
             y += 4;
             doc.text(`V. Entrada L1-L3: ${document.getElementById('jockey-v-entrada-l1l3').value || 'No especificado'}`, 20, y);
@@ -595,10 +648,18 @@
             y += 10;
 
             // Bomba Eléctrica
+            if (y > 250) {
+                doc.addPage();
+                pageNum++;
+                y = 50;
+                addHeaderFooter(pageNum);
+            }
             doc.setFont('helvetica', 'bold');
+            doc.setTextColor(0, 0, 255);
             doc.text('Bomba Eléctrica', 20, y);
             y += 5;
             doc.setFont('helvetica', 'normal');
+            doc.setTextColor(0, 0, 0);
             doc.text(`V. Entrada: ${document.getElementById('electrica-v-entrada').value || 'No especificado'}`, 20, y);
             y += 4;
             doc.text(`V. Salida: ${document.getElementById('electrica-v-salida').value || 'No especificado'}`, 20, y);
@@ -619,10 +680,18 @@
             y += 10;
 
             // Bomba Diesel
+            if (y > 250) {
+                doc.addPage();
+                pageNum++;
+                y = 50;
+                addHeaderFooter(pageNum);
+            }
             doc.setFont('helvetica', 'bold');
+            doc.setTextColor(0, 0, 255);
             doc.text('Bomba Diesel', 20, y);
             y += 5;
             doc.setFont('helvetica', 'normal');
+            doc.setTextColor(0, 0, 0);
             doc.text(`Niveles Agua: ${document.getElementById('diesel-nivel-agua').value || 'No especificado'}`, 20, y);
             y += 4;
             doc.text(`Niveles Aceite: ${document.getElementById('diesel-nivel-aceite').value || 'No especificado'}`, 20, y);
@@ -657,11 +726,19 @@
             y += 10;
 
             // Revisión de Hidrantes
+            if (y > 250) {
+                doc.addPage();
+                pageNum++;
+                y = 50;
+                addHeaderFooter(pageNum);
+            }
             doc.setFont('helvetica', 'bold');
+            doc.setTextColor(0, 0, 255);
             doc.text('Revisión de Hidrantes', 20, y);
             y += 5;
             for (let i = 1; i <= hidranteCount; i++) {
                 doc.setFont('helvetica', 'normal');
+                doc.setTextColor(0, 0, 0);
                 doc.text(`Hidrante ${i}: ${document.getElementById(`hidrante-${i}-ok`).checked ? 'OK' : 'No OK'}`, 20, y);
                 y += 4;
                 doc.text(`Comentarios: ${document.getElementById(`hidrante-${i}-comentarios`).value || 'Ninguno'}`, 20, y);
@@ -669,30 +746,65 @@
             }
             y += 10;
 
-            // Fotos (simulación con espacio)
+            // Fotos
+            if (y > 250) {
+                doc.addPage();
+                pageNum++;
+                y = 50;
+                addHeaderFooter(pageNum);
+            }
             doc.setFont('helvetica', 'bold');
+            doc.setTextColor(0, 0, 255);
             doc.text('Fotografías', 20, y);
             y += 5;
-            // Espacio para fotos (ajustar si se implementa canvas o imágenes)
-            y += 80;
+            const photoPromises = photoInputs.map(async (id) => {
+                if (photoData[id]) {
+                    const img = new Image();
+                    img.src = photoData[id];
+                    await new Promise(resolve => img.onload = resolve);
+                    doc.addImage(img, 'PNG', 20, y, 40, 30);
+                    y += 35;
+                    if (y > 250) {
+                        doc.addPage();
+                        pageNum++;
+                        y = 50;
+                        addHeaderFooter(pageNum);
+                    }
+                }
+            });
+            await Promise.all(photoPromises);
+            y += 10;
 
             // Firmas
+            if (y > 250) {
+                doc.addPage();
+                pageNum++;
+                y = 50;
+                addHeaderFooter(pageNum);
+            }
             doc.setFont('helvetica', 'bold');
+            doc.setTextColor(0, 0, 255);
             doc.text('Firmas', 20, y);
             y += 5;
             doc.setFont('helvetica', 'normal');
+            doc.setTextColor(0, 0, 0);
             doc.text(`Técnico: ${document.getElementById('jockey-tecnico').value || 'No especificado'}`, 20, y);
-            y += 20; // Espacio para firma simulada
+            const tecnicoCanvas = document.getElementById('jockey-tecnico-signature');
+            if (tecnicoCanvas) {
+                y += 5;
+                const tecnicoImg = await html2canvas(tecnicoCanvas);
+                const tecnicoData = tecnicoImg.toDataURL('image/png');
+                doc.addImage(tecnicoData, 'PNG', 20, y, 80, 30);
+                y += 35;
+            }
             doc.text(`Cliente: No disponible (Firma digital)`, 20, y);
-            y += 20;
-
-            // Pie de página
-            doc.setFontSize(10);
-            doc.setFillColor(179, 197, 214);
-            doc.rect(20, 270, 170, 10, 'F');
-            doc.setTextColor(255, 255, 255);
-            doc.text('Certificados NFPA - Formato realizado por RL', 25, 276);
-            doc.text(document.getElementById('currentDateTime').textContent, 25, 280);
+            const clienteCanvas = document.getElementById('jockey-cliente-signature');
+            if (clienteCanvas) {
+                y += 5;
+                const clienteImg = await html2canvas(clienteCanvas);
+                const clienteData = clienteImg.toDataURL('image/png');
+                doc.addImage(clienteData, 'PNG', 20, y, 80, 30);
+            }
 
             doc.save('Reporte_Mantenimiento_Bombas.pdf');
         }
@@ -703,7 +815,7 @@
                 `Lugar:\n` +
                 `Posicionamiento GPS: ${document.getElementById('lugar-gps').value || 'No especificado'}\n` +
                 `Número de Contrato: ${document.getElementById('lugar-contrato').value || 'No especificado'}\n` +
-                `Cliente: ${document.getElementById('lugar-cliente').value || 'No especificado'}\n\n` +
+                `Nombre del Cliente: ${document.getElementById('lugar-cliente').value || 'No especificado'}\n\n` +
                 `Bomba Jockey:\n` +
                 `V. Entrada L1-L2: ${document.getElementById('jockey-v-entrada-l1l2').value || 'No especificado'}\n` +
                 `V. Entrada L1-L3: ${document.getElementById('jockey-v-entrada-l1l3').value || 'No especificado'}\n` +
