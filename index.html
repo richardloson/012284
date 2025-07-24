@@ -413,7 +413,7 @@
                     <div>
                         <label for="jockey-tecnico-signature">Firma Técnico</label>
                         <canvas id="jockey-tecnico-signature" width="300" height="80"></canvas>
-                        <button onclick="clearSignature('jockey-tecnico-signature')">Borrar</button>
+                        <button type="button" onclick="clearSignature('jockey-tecnico-signature')">Borrar</button>
                     </div>
                 </div>
                 <div>
@@ -424,14 +424,14 @@
                     <div>
                         <label for="jockey-cliente-signature">Firma Cliente</label>
                         <canvas id="jockey-cliente-signature" width="300" height="80"></canvas>
-                        <button onclick="clearSignature('jockey-cliente-signature')">Borrar</button>
+                        <button type="button" onclick="clearSignature('jockey-cliente-signature')">Borrar</button>
                     </div>
                 </div>
             </fieldset>
         </form>
         <div class="button-group">
-            <button onclick="exportToPDF()">Exportar a PDF</button>
-            <button onclick="shareWhatsApp()">Compartir por WhatsApp</button>
+            <button type="button" onclick="exportToPDF()">Exportar a PDF</button>
+            <button type="button" onclick="shareWhatsApp()">Compartir por WhatsApp</button>
         </div>
         <div class="footer">
             <p>Certificados NFPA - Formato realizado por RL</p>
@@ -537,7 +537,7 @@
         function clearSignature(canvasId) {
             const canvas = document.getElementById(canvasId);
             const ctx = canvas.getContext('2d');
-            ctx.clearRect(0, 0, canvas.width, height);
+            ctx.clearRect(0, 0, canvas.width, canvas.height); // Corrige 'height' a 'canvas.height'
         }
 
         setupSignature('jockey-tecnico-signature');
@@ -925,7 +925,7 @@
                 `Cliente: ${document.getElementById('jockey-cliente').value || 'No especificado'}\n` +
                 `Generado el ${document.getElementById('dynamic-date').textContent.replace('Fecha: ', '')}`;
 
-            const encodedMessage = encodeURIComponent(message.substring(0, 1500));
+            const encodedMessage = encodeURIComponent(message);
             window.open(`https://wa.me/?text=${encodedMessage}`, '_blank');
         }
     </script>
