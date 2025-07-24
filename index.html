@@ -102,6 +102,11 @@
             gap: 5px;
             margin-bottom: 5px;
         }
+        .input-group-inline {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
         .signature-box, .photo-box {
             height: 80px;
             border: 2px dashed #4a5568;
@@ -144,7 +149,7 @@
             font-size: 0.8rem;
         }
         @media (max-width: 600px) {
-            .input-group, .photo-row {
+            .input-group, .photo-row, .input-group-inline {
                 grid-template-columns: 1fr;
             }
             button {
@@ -166,8 +171,11 @@
             <fieldset>
                 <legend>Lugar</legend>
                 <div>
-                    <label for="lugar-gps">Posicionamiento GPS</label>
-                    <input type="text" id="lugar-gps" placeholder="Ej: 19.43, -99.13">
+                    <label for="lugar-direccion">Dirección</label>
+                    <div class="input-group-inline">
+                        <input type="text" id="lugar-direccion" placeholder="Ej: Calle 123, Ciudad">
+                        <button type="button" onclick="getGPSLocation()">Obtener GPS</button>
+                    </div>
                 </div>
                 <div>
                     <label for="lugar-contrato">Número de Contrato</label>
@@ -178,9 +186,6 @@
                     <input type="text" id="lugar-empresa" required>
                 </div>
                 <div id="dynamic-date"></div>
-                <div>
-                    <button type="button" onclick="getGPSLocation()">Obtener GPS y Dirección</button>
-                </div>
             </fieldset>
 
             <fieldset>
@@ -204,8 +209,12 @@
                     </div>
                 </div>
                 <div>
-                    <label for="jockey-parametros">Parámetros Inicio/Paro</label>
-                    <input type="text" id="jockey-parametros">
+                    <label for="jockey-parametros-inicio">Parámetros Inicio</label>
+                    <input type="text" id="jockey-parametros-inicio">
+                </div>
+                <div>
+                    <label for="jockey-parametros-paro">Parámetros Paro</label>
+                    <input type="text" id="jockey-parametros-paro">
                 </div>
                 <div class="input-group">
                     <div>
@@ -250,8 +259,12 @@
                     </div>
                 </div>
                 <div>
-                    <label for="electrica-parametros">Parámetros Inicio/Paro</label>
-                    <input type="text" id="electrica-parametros">
+                    <label for="electrica-parametros-inicio">Parámetros Inicio</label>
+                    <input type="text" id="electrica-parametros-inicio">
+                </div>
+                <div>
+                    <label for="electrica-parametros-paro">Parámetros Paro</label>
+                    <input type="text" id="electrica-parametros-paro">
                 </div>
                 <div class="input-group">
                     <div>
@@ -287,26 +300,30 @@
                 <legend>Bomba Diesel</legend>
                 <div class="input-group">
                     <div>
-                        <label for="diesel-nivel-agua">Niveles Agua</label>
-                        <input type="number" id="diesel-nivel-agua" step="0.1" min="0" max="999">
+                        <label>Niveles de Agua</label>
+                        <input type="checkbox" id="diesel-nivel-agua-correcto"> Correcto
                     </div>
                     <div>
-                        <label for="diesel-nivel-aceite">Niveles Aceite</label>
-                        <input type="number" id="diesel-nivel-aceite" step="0.1" min="0" max="999">
+                        <label>Niveles de Aceite</label>
+                        <input type="checkbox" id="diesel-nivel-aceite-correcto"> Correcto
                     </div>
                 </div>
                 <div>
-                    <label for="diesel-parametros">Parámetros Inicio/Paro</label>
-                    <input type="text" id="diesel-parametros">
+                    <label for="diesel-parametros-inicio">Parámetros Inicio</label>
+                    <input type="text" id="diesel-parametros-inicio">
+                </div>
+                <div>
+                    <label for="diesel-parametros-paro">Parámetros Paro</label>
+                    <input type="text" id="diesel-parametros-paro">
                 </div>
                 <div class="input-group">
                     <div>
-                        <label for="diesel-diesel-3cuarto">Diesel +3/4</label>
-                        <input type="checkbox" id="diesel-diesel-3cuarto">
+                        <label>+3/4</label>
+                        <input type="radio" id="diesel-diesel-3cuarto" name="diesel-level" value="+3/4">
                     </div>
                     <div>
-                        <label for="diesel-diesel-menos3cuarto">Diesel -3/4</label>
-                        <input type="checkbox" id="diesel-diesel-menos3cuarto">
+                        <label>-3/4</label>
+                        <input type="radio" id="diesel-diesel-menos3cuarto" name="diesel-level" value="-3/4">
                     </div>
                     <div>
                         <label for="diesel-litros-faltan">Litros faltan</label>
@@ -379,6 +396,12 @@
                 <div class="photo-box" id="photo3">Cargar Foto 3</div>
                 <div class="photo-box" id="photo4">Cargar Foto 4</div>
             </div>
+            <div class="photo-row">
+                <div class="photo-box" id="photo5">Cargar Foto 5</div>
+                <div class="photo-box" id="photo6">Cargar Foto 6</div>
+                <div class="photo-box" id="photo7">Cargar Foto 7</div>
+                <div class="photo-box" id="photo8">Cargar Foto 8</div>
+            </div>
 
             <fieldset>
                 <legend>Firmas</legend>
@@ -392,6 +415,12 @@
                         <canvas id="jockey-tecnico-signature" width="300" height="80"></canvas>
                         <button onclick="clearSignature('jockey-tecnico-signature')">Borrar</button>
                     </div>
+                </div>
+                <div>
+                    <label for="jockey-cliente">Cliente</label>
+                    <input type="text" id="jockey-cliente" required>
+                </div>
+                <div class="signature-row">
                     <div>
                         <label for="jockey-cliente-signature">Firma Cliente</label>
                         <canvas id="jockey-cliente-signature" width="300" height="80"></canvas>
@@ -508,14 +537,14 @@
         function clearSignature(canvasId) {
             const canvas = document.getElementById(canvasId);
             const ctx = canvas.getContext('2d');
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.clearRect(0, 0, canvas.width, height);
         }
 
         setupSignature('jockey-tecnico-signature');
         setupSignature('jockey-cliente-signature');
 
         // Cargar fotos
-        const photoInputs = ['photo1', 'photo2', 'photo3', 'photo4'];
+        const photoInputs = ['photo1', 'photo2', 'photo3', 'photo4', 'photo5', 'photo6', 'photo7', 'photo8'];
         const photoData = {};
         photoInputs.forEach(id => {
             const photoBox = document.getElementById(id);
@@ -547,14 +576,14 @@
                     (position) => {
                         const lat = position.coords.latitude;
                         const lng = position.coords.longitude;
-                        const gpsInput = document.getElementById('lugar-gps');
-                        gpsInput.value = `${lat.toFixed(2)}, ${lng.toFixed(2)}`;
+                        const direccionInput = document.getElementById('lugar-direccion');
+                        direccionInput.value = `${lat.toFixed(2)}, ${lng.toFixed(2)}`;
 
                         const geocoder = new google.maps.Geocoder();
                         geocoder.geocode({ location: { lat, lng } }, (results, status) => {
                             if (status === 'OK') {
                                 if (results[0]) {
-                                    gpsInput.value += ` - ${results[0].formatted_address}`;
+                                    direccionInput.value = results[0].formatted_address;
                                 } else {
                                     alert('No se encontró dirección para esta ubicación.');
                                 }
@@ -585,7 +614,9 @@
             function addHeaderFooter(pageNum) {
                 const logoImg = new Image();
                 logoImg.src = 'icons/banner.png';
-                doc.addImage(logoImg, 'PNG', 80, 10, 50, 20); // Ancho fijo de 50mm, altura proporcional
+                const logoWidth = 150; // Ancho fijo de 150mm
+                const logoHeight = (logoImg.height / logoImg.width) * logoWidth; // Altura proporcional
+                doc.addImage(logoImg, 'PNG', 20, 10, logoWidth, logoHeight);
                 doc.setFontSize(14);
                 doc.setTextColor(74, 144, 226); // Azul grisáceo
                 doc.text('Reporte de Mantenimiento - Sistemas de Bombeo', 20, 40);
@@ -612,12 +643,12 @@
 
             // Lugar
             doc.setFont('helvetica', 'bold');
-            doc.setTextColor(74, 144, 226); // Azul grisáceo
+            doc.setTextColor(74, 144, 226);
             doc.text('Lugar', 20, y);
             y += 5;
             doc.setFont('helvetica', 'normal');
             doc.setTextColor(0, 0, 0);
-            doc.text(`Posicionamiento GPS: ${document.getElementById('lugar-gps').value || 'No especificado'}`, 20, y);
+            doc.text(`Dirección: ${document.getElementById('lugar-direccion').value || 'No especificado'}`, 20, y);
             y += 4;
             doc.text(`Número de Contrato: ${document.getElementById('lugar-contrato').value || 'No especificado'}`, 20, y);
             y += 4;
@@ -645,7 +676,9 @@
             y += 4;
             doc.text(`V. Salida: ${document.getElementById('jockey-v-salida').value || 'No especificado'}`, 20, y);
             y += 4;
-            doc.text(`Parámetros: ${document.getElementById('jockey-parametros').value || 'No especificado'}`, 20, y);
+            doc.text(`Parámetros Inicio: ${document.getElementById('jockey-parametros-inicio').value || 'No especificado'}`, 20, y);
+            y += 4;
+            doc.text(`Parámetros Paro: ${document.getElementById('jockey-parametros-paro').value || 'No especificado'}`, 20, y);
             y += 4;
             doc.text(`Lect. Inicio: ${document.getElementById('jockey-lecturas-inicio').value || 'No especificado'}`, 20, y);
             y += 4;
@@ -677,7 +710,9 @@
             y += 4;
             doc.text(`V. Salida: ${document.getElementById('electrica-v-salida').value || 'No especificado'}`, 20, y);
             y += 4;
-            doc.text(`Parámetros: ${document.getElementById('electrica-parametros').value || 'No especificado'}`, 20, y);
+            doc.text(`Parámetros Inicio: ${document.getElementById('electrica-parametros-inicio').value || 'No especificado'}`, 20, y);
+            y += 4;
+            doc.text(`Parámetros Paro: ${document.getElementById('electrica-parametros-paro').value || 'No especificado'}`, 20, y);
             y += 4;
             doc.text(`Lect. Inicio: ${document.getElementById('electrica-lecturas-inicio').value || 'No especificado'}`, 20, y);
             y += 4;
@@ -705,15 +740,17 @@
             y += 5;
             doc.setFont('helvetica', 'normal');
             doc.setTextColor(0, 0, 0);
-            doc.text(`Niveles Agua: ${document.getElementById('diesel-nivel-agua').value || 'No especificado'}`, 20, y);
+            doc.text(`Niveles de Agua: ${document.getElementById('diesel-nivel-agua-correcto').checked ? 'Correcto' : 'No Correcto'}`, 20, y);
             y += 4;
-            doc.text(`Niveles Aceite: ${document.getElementById('diesel-nivel-aceite').value || 'No especificado'}`, 20, y);
+            doc.text(`Niveles de Aceite: ${document.getElementById('diesel-nivel-aceite-correcto').checked ? 'Correcto' : 'No Correcto'}`, 20, y);
             y += 4;
-            doc.text(`Parámetros: ${document.getElementById('diesel-parametros').value || 'No especificado'}`, 20, y);
+            doc.text(`Parámetros Inicio: ${document.getElementById('diesel-parametros-inicio').value || 'No especificado'}`, 20, y);
             y += 4;
-            doc.text(`Diesel +3/4: ${document.getElementById('diesel-diesel-3cuarto').checked ? 'Sí' : 'No'}`, 20, y);
+            doc.text(`Parámetros Paro: ${document.getElementById('diesel-parametros-paro').value || 'No especificado'}`, 20, y);
             y += 4;
-            doc.text(`Diesel -3/4: ${document.getElementById('diesel-diesel-menos3cuarto').checked ? 'Sí' : 'No'}`, 20, y);
+            doc.text(`+3/4: ${document.getElementById('diesel-diesel-3cuarto').checked ? 'Sí' : 'No'}`, 20, y);
+            y += 4;
+            doc.text(`-3/4: ${document.getElementById('diesel-diesel-menos3cuarto').checked ? 'Sí' : 'No'}`, 20, y);
             y += 4;
             doc.text(`Litros faltan: ${document.getElementById('diesel-litros-faltan').value || 'No especificado'}`, 20, y);
             y += 4;
@@ -770,23 +807,29 @@
             doc.setTextColor(74, 144, 226);
             doc.text('Fotografías', 20, y);
             y += 5;
-            const photoPromises = photoInputs.map(async (id) => {
+            const photoPromises = [];
+            for (let i = 0; i < photoInputs.length; i++) {
+                const id = photoInputs[i];
                 if (photoData[id]) {
                     const img = new Image();
                     img.src = photoData[id];
                     await new Promise(resolve => img.onload = resolve);
-                    doc.addImage(img, 'PNG', 20, y, 40, 30);
-                    y += 35;
-                    if (y > 250) {
+                    const x = 20 + (i % 4) * 45;
+                    const row = Math.floor(i / 4);
+                    const yPos = y + row * 35;
+                    if (yPos > 250) {
                         doc.addPage();
                         pageNum++;
                         y = 50;
                         addHeaderFooter(pageNum);
+                        doc.text('Fotografías', 20, y);
+                        y += 5;
                     }
+                    doc.addImage(img, 'PNG', x, yPos, 40, 30);
                 }
-            });
+            }
             await Promise.all(photoPromises);
-            y += 10;
+            y += 70; // Ajuste para dos filas
 
             // Firmas
             if (y > 250) {
@@ -810,7 +853,7 @@
                 doc.addImage(tecnicoData, 'PNG', 20, y, 80, 30);
                 y += 35;
             }
-            doc.text(`Cliente: No disponible (Firma digital)`, 20, y);
+            doc.text(`Cliente: ${document.getElementById('jockey-cliente').value || 'No especificado'}`, 20, y);
             const clienteCanvas = document.getElementById('jockey-cliente-signature');
             if (clienteCanvas) {
                 y += 5;
@@ -826,7 +869,7 @@
         function shareWhatsApp() {
             const message = `Reporte de Mantenimiento - Sistemas de Bombeo\n\n` +
                 `Lugar:\n` +
-                `Posicionamiento GPS: ${document.getElementById('lugar-gps').value || 'No especificado'}\n` +
+                `Dirección: ${document.getElementById('lugar-direccion').value || 'No especificado'}\n` +
                 `Número de Contrato: ${document.getElementById('lugar-contrato').value || 'No especificado'}\n` +
                 `Empresa: ${document.getElementById('lugar-empresa').value || 'No especificado'}\n` +
                 `Fecha: ${document.getElementById('dynamic-date').textContent.replace('Fecha: ', '')}\n\n` +
@@ -835,7 +878,8 @@
                 `V. Entrada L1-L3: ${document.getElementById('jockey-v-entrada-l1l3').value || 'No especificado'}\n` +
                 `V. Entrada L2-L3: ${document.getElementById('jockey-v-entrada-l2l3').value || 'No especificado'}\n` +
                 `V. Salida: ${document.getElementById('jockey-v-salida').value || 'No especificado'}\n` +
-                `Parámetros: ${document.getElementById('jockey-parametros').value || 'No especificado'}\n` +
+                `Parámetros Inicio: ${document.getElementById('jockey-parametros-inicio').value || 'No especificado'}\n` +
+                `Parámetros Paro: ${document.getElementById('jockey-parametros-paro').value || 'No especificado'}\n` +
                 `Lect. Inicio: ${document.getElementById('jockey-lecturas-inicio').value || 'No especificado'}\n` +
                 `Lect. Paro: ${document.getElementById('jockey-lecturas-paro').value || 'No especificado'}\n` +
                 `Amperaje L1: ${document.getElementById('jockey-amperaje-l1').value || 'No especificado'}\n` +
@@ -845,7 +889,8 @@
                 `Bomba Eléctrica:\n` +
                 `V. Entrada: ${document.getElementById('electrica-v-entrada').value || 'No especificado'}\n` +
                 `V. Salida: ${document.getElementById('electrica-v-salida').value || 'No especificado'}\n` +
-                `Parámetros: ${document.getElementById('electrica-parametros').value || 'No especificado'}\n` +
+                `Parámetros Inicio: ${document.getElementById('electrica-parametros-inicio').value || 'No especificado'}\n` +
+                `Parámetros Paro: ${document.getElementById('electrica-parametros-paro').value || 'No especificado'}\n` +
                 `Lect. Inicio: ${document.getElementById('electrica-lecturas-inicio').value || 'No especificado'}\n` +
                 `Lect. Paro: ${document.getElementById('electrica-lecturas-paro').value || 'No especificado'}\n` +
                 `Amperaje L1: ${document.getElementById('electrica-amperaje-l1').value || 'No especificado'}\n` +
@@ -853,11 +898,12 @@
                 `Amperaje L3: ${document.getElementById('electrica-amperaje-l3').value || 'No especificado'}\n` +
                 `Descarga PSI: ${document.getElementById('electrica-descarga').value || 'No especificado'}\n\n` +
                 `Bomba Diesel:\n` +
-                `Niveles Agua: ${document.getElementById('diesel-nivel-agua').value || 'No especificado'}\n` +
-                `Niveles Aceite: ${document.getElementById('diesel-nivel-aceite').value || 'No especificado'}\n` +
-                `Parámetros: ${document.getElementById('diesel-parametros').value || 'No especificado'}\n` +
-                `Diesel +3/4: ${document.getElementById('diesel-diesel-3cuarto').checked ? 'Sí' : 'No'}\n` +
-                `Diesel -3/4: ${document.getElementById('diesel-diesel-menos3cuarto').checked ? 'Sí' : 'No'}\n` +
+                `Niveles de Agua: ${document.getElementById('diesel-nivel-agua-correcto').checked ? 'Correcto' : 'No Correcto'}\n` +
+                `Niveles de Aceite: ${document.getElementById('diesel-nivel-aceite-correcto').checked ? 'Correcto' : 'No Correcto'}\n` +
+                `Parámetros Inicio: ${document.getElementById('diesel-parametros-inicio').value || 'No especificado'}\n` +
+                `Parámetros Paro: ${document.getElementById('diesel-parametros-paro').value || 'No especificado'}\n` +
+                `+3/4: ${document.getElementById('diesel-diesel-3cuarto').checked ? 'Sí' : 'No'}\n` +
+                `-3/4: ${document.getElementById('diesel-diesel-menos3cuarto').checked ? 'Sí' : 'No'}\n` +
                 `Litros faltan: ${document.getElementById('diesel-litros-faltan').value || 'No especificado'}\n` +
                 `Lect. Inicio: ${document.getElementById('diesel-lecturas-inicio').value || 'No especificado'}\n` +
                 `Lect. Paro: ${document.getElementById('diesel-lecturas-paro').value || 'No especificado'}\n` +
@@ -876,7 +922,7 @@
             }
             message += `\nFirmas:\n` +
                 `Técnico: ${document.getElementById('jockey-tecnico').value || 'No especificado'}\n` +
-                `Cliente: No disponible (Firma digital)\n` +
+                `Cliente: ${document.getElementById('jockey-cliente').value || 'No especificado'}\n` +
                 `Generado el ${document.getElementById('dynamic-date').textContent.replace('Fecha: ', '')}`;
 
             const encodedMessage = encodeURIComponent(message.substring(0, 1500));
