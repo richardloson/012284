@@ -625,9 +625,9 @@
                 return new Promise((resolve) => {
                     const logoImg = new Image();
                     logoImg.onload = () => {
-                        const logoWidth = 180; 
+                        const logoWidth = 180;
                         const logoHeight = (logoImg.height / logoImg.width) * logoWidth;
-                        const x = (210 - logoWidth) / 2; // centrado
+                        const x = (210 - logoWidth) / 2;
                         doc.addImage(logoImg, 'PNG', x, 10, logoWidth, logoHeight);
                         doc.setFontSize(16);
                         doc.setTextColor(30, 30, 30);
@@ -649,7 +649,17 @@
             let pageNum = 1;
             await addHeaderFooter(pageNum);
 
+            function newPageIfNeeded(extraSpace = 20) {
+                if (y + extraSpace > 270) {
+                    doc.addPage();
+                    pageNum++;
+                    addHeaderFooter(pageNum);
+                    y = 60;
+                }
+            }
+
             function addSectionTitle(title) {
+                newPageIfNeeded(15);
                 doc.setFont('helvetica', 'bold');
                 doc.setTextColor(40, 40, 40);
                 doc.setFontSize(14);
@@ -663,16 +673,123 @@
                 doc.setFontSize(11);
             }
 
-            // Ejemplo: Lugar
-            addSectionTitle('Lugar');
-            doc.text(`Dirección: ${document.getElementById('lugar-direccion').value || 'No especificado'}`, 20, y); y += 5;
-            doc.text(`Número de Contrato: ${document.getElementById('lugar-contrato').value || 'No especificado'}`, 20, y); y += 5;
-            doc.text(`Empresa: ${document.getElementById('lugar-empresa').value || 'No especificado'}`, 20, y); y += 10;
+            function addField(label, value) {
+                newPageIfNeeded(7);
+                doc.text(`${label}: ${value}`, 20, y);
+                y += 5;
+            }
 
-            // Aquí seguiría el resto de secciones (Bomba Jockey, Bomba Eléctrica, etc.) con la misma estructura
+            // Lugar
+            addSectionTitle('Lugar');
+            addField('Dirección', document.getElementById('lugar-direccion').value || 'No especificado');
+            addField('Número de Contrato', document.getElementById('lugar-contrato').value || 'No especificado');
+            addField('Empresa', document.getElementById('lugar-empresa').value || 'No especificado');
+            y += 5;
+
+            // Bomba Jockey
+            addSectionTitle('Bomba Jockey');
+            const jockeyFields = [
+                ['V. Entrada L1-L2', 'jockey-v-entrada-l1l2'],
+                ['V. Entrada L1-L3', 'jockey-v-entrada-l1l3'],
+                ['V. Entrada L2-L3', 'jockey-v-entrada-l2l3'],
+                ['V. Salida', 'jockey-v-salida'],
+                ['Parámetros Inicio', 'jockey-parametros-inicio'],
+                ['Parámetros Paro', 'jockey-parametros-paro'],
+                ['Lect. Inicio', 'jockey-lecturas-inicio'],
+                ['Lect. Paro', 'jockey-lecturas-paro'],
+                ['Amperaje L1', 'jockey-amperaje-l1'],
+                ['Amperaje L2', 'jockey-amperaje-l2'],
+                ['Amperaje L3', 'jockey-amperaje-l3'],
+                ['Descarga PSI', 'jockey-descarga']
+            ];
+            jockeyFields.forEach(([label, id]) => addField(label, document.getElementById(id).value || 'No especificado'));
+            y += 5;
+
+            // Bomba Eléctrica
+            addSectionTitle('Bomba Eléctrica');
+            const electricaFields = [
+                ['V. Entrada', 'electrica-v-entrada'],
+                ['V. Salida', 'electrica-v-salida'],
+                ['Parámetros Inicio', 'electrica-parametros-inicio'],
+                ['Parámetros Paro', 'electrica-parametros-paro'],
+                ['Lect. Inicio', 'electrica-lecturas-inicio'],
+                ['Lect. Paro', 'electrica-lecturas-paro'],
+                ['Amperaje L1', 'electrica-amperaje-l1'],
+                ['Amperaje L2', 'electrica-amperaje-l2'],
+                ['Amperaje L3', 'electrica-amperaje-l3'],
+                ['Descarga PSI', 'electrica-descarga']
+            ];
+            electricaFields.forEach(([label, id]) => addField(label, document.getElementById(id).value || 'No especificado'));
+            y += 5;
+
+            // Bomba Diesel
+            addSectionTitle('Bomba Diesel');
+            addField('Niveles de Agua', document.getElementById('diesel-nivel-agua-correcto').checked ? 'Correcto' : 'No Correcto');
+            addField('Niveles de Aceite', document.getElementById('diesel-nivel-aceite-correcto').checked ? 'Correcto' : 'No Correcto');
+            const dieselFields = [
+                ['Parámetros Inicio', 'diesel-parametros-inicio'],
+                ['Parámetros Paro', 'diesel-parametros-paro'],
+                ['+3/4', 'diesel-diesel-3cuarto'],
+                ['-3/4', 'diesel-diesel-menos3cuarto'],
+                ['Litros faltan', 'diesel-litros-faltan'],
+                ['Lect. Inicio', 'diesel-lecturas-inicio'],
+                ['Lect. Paro', 'diesel-lecturas-paro'],
+                ['Velocidad RPM', 'diesel-velocidad'],
+                ['VAC', 'diesel-vac'],
+                ['Pres. Aceite PSI', 'diesel-presion-aceite'],
+                ['Temp. Inicial', 'diesel-temp-inicial'],
+                ['Temp. Final', 'diesel-temp-final'],
+                ['Hrs. Inicial', 'diesel-hrs-inicial'],
+                ['Hrs. Final', 'diesel-hrs-final'],
+                ['Observaciones', 'diesel-observaciones']
+            ];
+            dieselFields.forEach(([label, id]) => {
+                const el = document.getElementById(id);
+                let value = el.type === 'checkbox' || el.type === 'radio' ? (el.checked ? 'Sí' : 'No') : (el.value || 'No especificado');
+                addField(label, value);
+            });
+            y += 5;
+
+            // Hidrantes
+            addSectionTitle('Revisión de Hidrantes');
+            for (let i = 1; i <= hidranteCount; i++) {
+                addField(`Hidrante ${i}`, document.getElementById(`hidrante-${i}-ok`).checked ? 'OK' : 'No OK');
+                addField('Comentarios', document.getElementById(`hidrante-${i}-comentarios`).value || 'Ninguno');
+                y += 3;
+            }
+            y += 5;
+
+            // Fotos
+            addSectionTitle('Fotografías');
+            const photoInputs = ['photo1', 'photo2', 'photo3', 'photo4', 'photo5', 'photo6', 'photo7', 'photo8'];
+            for (let i = 0; i < photoInputs.length; i++) {
+                if (photoData[photoInputs[i]]) {
+                    newPageIfNeeded(40);
+                    doc.addImage(photoData[photoInputs[i]], 'PNG', 20 + (i % 4) * 45, y, 40, 30);
+                    if ((i + 1) % 4 === 0) y += 35;
+                }
+            }
+            y += 40;
+
+            // Firmas
+            addSectionTitle('Firmas');
+            addField('Técnico', document.getElementById('jockey-tecnico').value || 'No especificado');
+            const tecnicoCanvas = document.getElementById('jockey-tecnico-signature');
+            if (tecnicoCanvas) {
+                const tecnicoImg = await html2canvas(tecnicoCanvas);
+                doc.addImage(tecnicoImg.toDataURL('image/png'), 'PNG', 20, y, 60, 25);
+                y += 30;
+            }
+            addField('Cliente', document.getElementById('jockey-cliente').value || 'No especificado');
+            const clienteCanvas = document.getElementById('jockey-cliente-signature');
+            if (clienteCanvas) {
+                const clienteImg = await html2canvas(clienteCanvas);
+                doc.addImage(clienteImg.toDataURL('image/png'), 'PNG', 20, y, 60, 25);
+            }
 
             doc.save('Reporte_Mantenimiento_Bombas.pdf');
         }
+
 
         // Compartir por WhatsApp
         function shareWhatsApp() {
