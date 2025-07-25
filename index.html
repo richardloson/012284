@@ -49,7 +49,7 @@
     <style>
     body {
         font-family: 'Roboto', sans-serif;
-        background-color: #f0f2f5;
+        background-color: #e5e7eb;
         margin: 0;
         padding: 20px;
         display: flex;
@@ -57,29 +57,33 @@
     }
     .container {
         background: #ffffff;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
         width: 100%;
         max-width: 900px;
     }
     .header img {
-        max-height: 90px;
         display: block;
-        margin: 0 auto 20px;
+        margin: 0 auto 25px;
+        max-width: 100%;
+        height: auto;
     }
     fieldset {
         margin-bottom: 20px;
-        padding: 15px;
+        padding: 15px 20px;
         border: 1px solid #d1d5db;
         border-radius: 8px;
-        background: #fafafa;
+        background: #f9fafb;
     }
     legend {
-        font-size: 1.2rem;
+        font-size: 1.3rem;
         font-weight: bold;
-        color: #2563eb;
+        color: #1f2937;
         padding: 0 10px;
+        border-bottom: 2px solid #9ca3af;
+        margin-bottom: 10px;
+        display: inline-block;
     }
     label {
         display: block;
@@ -108,11 +112,11 @@
         gap: 10px;
     }
     .signature-box, .photo-box {
-        height: 90px;
-        border: 2px dashed #9ca3af;
+        height: 100px;
+        border: 2px dashed #6b7280;
         background: #f3f4f6;
         text-align: center;
-        line-height: 90px;
+        line-height: 100px;
         cursor: pointer;
         border-radius: 5px;
     }
@@ -124,7 +128,7 @@
     }
     button {
         padding: 10px 18px;
-        background-color: #2563eb;
+        background-color: #1f2937;
         color: white;
         border: none;
         border-radius: 5px;
@@ -133,7 +137,7 @@
         transition: background-color 0.3s;
     }
     button:hover {
-        background-color: #1d4ed8;
+        background-color: #111827;
     }
     .button-group {
         display: flex;
@@ -145,7 +149,7 @@
     .footer {
         margin-top: 15px;
         text-align: center;
-        background: #2563eb;
+        background: #1f2937;
         padding: 10px;
         border-radius: 5px;
         color: #ffffff;
@@ -582,7 +586,8 @@
                         const lat = position.coords.latitude;
                         const lng = position.coords.longitude;
                         const direccionInput = document.getElementById('lugar-direccion');
-                        direccionInput.value = `${lat.toFixed(2)}, ${lng.toFixed(2)}`;
+                        // Primero mostramos coordenadas mientras buscamos dirección
+                        direccionInput.value = `Obteniendo dirección...`;
 
                         const geocoder = new google.maps.Geocoder();
                         geocoder.geocode({ location: { lat, lng } }, (results, status) => {
@@ -620,7 +625,7 @@
                 return new Promise((resolve) => {
                     const logoImg = new Image();
                     logoImg.onload = () => {
-                        const logoWidth = 150; // Ancho fijo de 150mm
+                        const logoWidth = 180; // Ancho fijo más amplio manteniendo aspecto
                         const logoHeight = (logoImg.height / logoImg.width) * logoWidth;
                         doc.addImage(logoImg, 'PNG', 20, 10, logoWidth, logoHeight);
                         doc.setFontSize(14);
