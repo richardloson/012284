@@ -1,223 +1,186 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Reporte Profesional de Mantenimiento</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mantenimiento de Sistemas de Bombeo</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=geocoding" async defer></script>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f3f4f6;
-      margin: 0;
-      padding: 20px;
-      display: flex;
-      justify-content: center;
-    }
-    .container {
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      width: 100%;
-      max-width: 1000px;
-    }
-    h2 {
-      background: #1f2937;
-      color: white;
-      padding: 10px;
-      border-radius: 6px;
-      margin-top: 0;
-      font-size: 1.2rem;
-    }
-    .section {
-      background: #f9fafb;
-      border: 1px solid #d1d5db;
-      border-radius: 10px;
-      padding: 20px;
-      margin-bottom: 20px;
-    }
-    label {
-      display: block;
-      font-weight: 600;
-      color: #374151;
-      margin-bottom: 5px;
-    }
-    input, textarea {
-      width: 100%;
-      padding: 8px;
-      margin-bottom: 12px;
-      border: 1px solid #d1d5db;
-      border-radius: 6px;
-    }
-    .row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-    .col {
-      flex: 1;
-      min-width: 180px;
-    }
-    .photo-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 10px;
-    }
-    .photo-box {
-      height: 100px;
-      border: 2px dashed #9ca3af;
-      background: #e5e7eb;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      border-radius: 5px;
-    }
-    canvas {
-      border: 1px dashed #999;
-      background: #fff;
-      margin-top: 10px;
-    }
-    .footer {
-      text-align: center;
-      background: #1f2937;
-      color: white;
-      padding: 10px;
-      border-radius: 6px;
-      margin-top: 30px;
-      font-size: 0.85rem;
-    }
-    .btn {
-      display: block;
-      width: 100%;
-      padding: 12px;
-      margin-top: 20px;
-      background: #1f2937;
-      color: white;
-      font-weight: bold;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    .btn:hover {
-      background: #111827;
-    }
+    body { font-family: 'Roboto', sans-serif; background-color: #e5e7eb; margin: 0; padding: 20px; display: flex; justify-content: center; }
+    .container { background: #ffffff; padding: 25px; border-radius: 10px; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1); width: 100%; max-width: 900px; }
+    .header img { display: block; margin: 0 auto 25px; max-width: 100%; height: auto; }
+    fieldset { margin-bottom: 20px; padding: 15px 20px; border: 1px solid #d1d5db; border-radius: 8px; background: #f9fafb; }
+    legend { font-size: 1.3rem; font-weight: bold; color: #1f2937; padding: 0 10px; }
+    label { display: block; margin-bottom: 5px; color: #374151; font-size: 0.95rem; }
+    input, select, textarea, .signature-box, .photo-box { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #d1d5db; border-radius: 5px; font-size: 0.95rem; }
+    .input-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+    .signature-box, .photo-box { height: 100px; border: 2px dashed #6b7280; background: #f3f4f6; text-align: center; line-height: 100px; cursor: pointer; border-radius: 5px; }
+    .photo-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    button { padding: 10px 18px; background-color: #1f2937; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 0.95rem; }
+    button:hover { background-color: #111827; }
+    .button-group { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin: 20px 0; }
+    .footer { margin-top: 15px; text-align: center; background: #1f2937; padding: 10px; border-radius: 5px; color: #ffffff; font-size: 0.85rem; }
   </style>
 </head>
 <body>
-  <div class="container" id="reporte">
-    <form>
-      <div class="section">
-        <h2>Lugar</h2>
-        <label>Dirección</label><input id="lugar-direccion" />
-        <label>Número de Contrato</label><input id="lugar-contrato" />
-        <label>Empresa</label><input id="lugar-empresa" />
+<div class="container">
+  <div class="header">
+    <img src="icons/banner.png" alt="Logo" id="header-logo">
+  </div>
+  <form id="mantenimientoForm">
+    <!-- Lugar -->
+    <fieldset>
+      <legend>Lugar</legend>
+      <label for="lugar-direccion">Dirección</label>
+      <div class="input-group">
+        <input type="text" id="lugar-direccion" placeholder="Ej: Calle 123, Ciudad">
+        <button type="button" onclick="getGPSLocation()">Obtener GPS</button>
       </div>
+      <label for="lugar-contrato">Número de Contrato</label>
+      <input type="text" id="lugar-contrato" required>
+      <label for="lugar-empresa">Empresa</label>
+      <input type="text" id="lugar-empresa" required>
+    </fieldset>
 
-      <div class="section">
-        <h2>Bomba Jockey</h2>
-        <div class="row">
-          <div class="col"><label>L1-L2</label><input id="jockey-l1l2" /></div>
-          <div class="col"><label>L1-L3</label><input id="jockey-l1l3" /></div>
-          <div class="col"><label>L2-L3</label><input id="jockey-l2l3" /></div>
+    <!-- Bomba Jockey -->
+    <fieldset>
+      <legend>Bomba Jockey</legend>
+      <div class="input-group">
+        <input id="jockey-v-entrada-l1l2" placeholder="V. Entrada L1-L2">
+        <input id="jockey-v-entrada-l1l3" placeholder="V. Entrada L1-L3">
+        <input id="jockey-v-entrada-l2l3" placeholder="V. Entrada L2-L3">
+        <input id="jockey-v-salida" placeholder="V. Salida">
+      </div>
+    </fieldset>
+
+    <!-- Bomba Eléctrica -->
+    <fieldset>
+      <legend>Bomba Eléctrica</legend>
+      <div class="input-group">
+        <input id="electrica-v-entrada" placeholder="V. Entrada">
+        <input id="electrica-v-salida" placeholder="V. Salida">
+      </div>
+    </fieldset>
+
+    <!-- Bomba Diesel -->
+    <fieldset>
+      <legend>Bomba Diesel</legend>
+      <div class="input-group">
+        <input id="diesel-parametros-inicio" placeholder="Parámetros Inicio">
+        <input id="diesel-parametros-paro" placeholder="Parámetros Paro">
+        <input id="diesel-velocidad" placeholder="Velocidad RPM">
+      </div>
+      <label><input type="checkbox" id="diesel-nivel-agua-correcto"> Niveles de Agua Correcto</label>
+      <label><input type="checkbox" id="diesel-nivel-aceite-correcto"> Niveles de Aceite Correcto</label>
+    </fieldset>
+
+    <!-- Revisión de Hidrantes -->
+    <fieldset>
+      <legend>Revisión de Hidrantes</legend>
+      <div class="input-group">
+        <input type="checkbox" id="hidrante-1-ok"> Hidrante 1 OK
+        <input id="hidrante-1-comentarios" placeholder="Comentarios">
+      </div>
+    </fieldset>
+
+    <!-- Fotos -->
+    <fieldset>
+      <legend>Fotografías</legend>
+      <div class="photo-row">
+        <div class="photo-box" id="photo1">Foto 1</div>
+        <div class="photo-box" id="photo2">Foto 2</div>
+      </div>
+    </fieldset>
+
+    <!-- Firmas -->
+    <fieldset>
+      <legend>Firmas</legend>
+      <div class="input-group">
+        <div>
+          <label for="jockey-tecnico">Técnico</label>
+          <input type="text" id="jockey-tecnico">
+          <canvas id="jockey-tecnico-signature" width="300" height="80"></canvas>
         </div>
-        <div class="row">
-          <div class="col"><label>V. Salida</label><input id="jockey-salida" /></div>
-          <div class="col"><label>Descarga PSI</label><input id="jockey-psi" /></div>
-        </div>
-        <div class="row">
-          <div class="col"><label>Amperaje L1</label><input id="jockey-a1" /></div>
-          <div class="col"><label>Amperaje L2</label><input id="jockey-a2" /></div>
-          <div class="col"><label>Amperaje L3</label><input id="jockey-a3" /></div>
-        </div>
-      </div><div class="section">
-        <h2>Bomba Eléctrica</h2>
-        <div class="row">
-          <div class="col"><label>V. Entrada</label><input id="elec-entrada" /></div>
-          <div class="col"><label>V. Salida</label><input id="elec-salida" /></div>
-          <div class="col"><label>Descarga PSI</label><input id="elec-psi" /></div>
-        </div>
-        <div class="row">
-          <div class="col"><label>Amperaje L1</label><input id="elec-a1" /></div>
-          <div class="col"><label>Amperaje L2</label><input id="elec-a2" /></div>
-          <div class="col"><label>Amperaje L3</label><input id="elec-a3" /></div>
+        <div>
+          <label for="jockey-cliente">Cliente</label>
+          <input type="text" id="jockey-cliente">
+          <canvas id="jockey-cliente-signature" width="300" height="80"></canvas>
         </div>
       </div>
+    </fieldset>
+  </form>
 
-      <div class="section">
-        <h2>Bomba Diesel</h2>
-        <div class="row">
-          <div class="col"><label>Velocidad RPM</label><input id="diesel-rpm" /></div>
-          <div class="col"><label>Presión Aceite</label><input id="diesel-aceite" /></div>
-        </div>
-        <div class="row">
-          <div class="col"><label>Temperatura Inicial</label><input id="diesel-temp-i" /></div>
-          <div class="col"><label>Temperatura Final</label><input id="diesel-temp-f" /></div>
-        </div>
-        <label>Observaciones</label>
-        <textarea id="diesel-observaciones" rows="3"></textarea>
-      </div>
+  <div class="button-group">
+    <button type="button" onclick="exportToPDF()">Exportar a PDF</button>
+  </div>
+  <div class="footer">
+    Certificados NFPA - Formato realizado por RL
+  </div>
+</div>
 
-      <div class="section">
-        <h2>Revisión de Hidrantes</h2>
-        <label><input type="checkbox" id="hidrante-ok" /> Todos los hidrantes operativos</label>
-        <label>Observaciones</label>
-        <textarea id="hidrante-observaciones" rows="3"></textarea>
-      </div><div class="section">
-        <h2>Fotografías</h2>
-        <div class="photo-grid">
-          <div class="photo-box">Foto 1</div>
-          <div class="photo-box">Foto 2</div>
-          <div class="photo-box">Foto 3</div>
-          <div class="photo-box">Foto 4</div>
-        </div>
-      </div>
+<script>
+async function exportToPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const colorTitulo = [31, 41, 55];
+  const colorSeccion = [245, 245, 245];
 
-      <div class="section">
-        <h2>Firmas</h2>
-        <div class="row">
-          <div class="col">
-            <label>Nombre del Técnico</label>
-            <input id="tecnico" />
-            <canvas id="firma-tecnico" width="300" height="80"></canvas>
-          </div>
-          <div class="col">
-            <label>Nombre del Cliente</label>
-            <input id="cliente" />
-            <canvas id="firma-cliente" width="300" height="80"></canvas>
-          </div>
-        </div>
-      </div>
-
-      <button type="button" class="btn" onclick="exportarPDF()">Exportar a PDF</button>
-    </form>
-
-    <div class="footer">
-      Reporte generado automáticamente · Certificados NFPA · Mantenimiento de Bombas
-    </div>
-  </div><script>
-  async function exportarPDF() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF('p', 'mm', 'a4');
-    const elemento = document.getElementById("reporte");
-
-    // Esperar captura visual con html2canvas
-    const canvas = await html2canvas(elemento, { scale: 2 });
-    const imgData = canvas.toDataURL("image/png");
-
-    const pdfWidth = doc.internal.pageSize.getWidth();
-    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-
-    doc.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-
-    // Obtener número de contrato y fecha para el nombre del archivo
-    const contrato = document.getElementById("lugar-contrato").value || "0000";
-    const fecha = new Date().toISOString().slice(2, 10).replace(/-/g, "");
-
-    // Guardar PDF
-    doc.save(`RP_${contrato}_${fecha}.pdf`);
+  function startSection(title) {
+    doc.setFillColor(...colorSeccion);
+    doc.roundedRect(15, y, 180, 8, 2, 2, 'F');
+    doc.setTextColor(...colorTitulo);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(13);
+    doc.text(title, 20, y + 6);
+    y += 12;
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(11);
   }
-</script></body>
+
+  let y = 60;
+  startSection('Lugar');
+  doc.text('Dirección: ' + (document.getElementById('lugar-direccion').value || 'No especificado'), 20, y); y += 5;
+  doc.text('Número de Contrato: ' + (document.getElementById('lugar-contrato').value || 'No especificado'), 20, y); y += 5;
+  doc.text('Empresa: ' + (document.getElementById('lugar-empresa').value || 'No especificado'), 20, y); y += 10;
+
+  startSection('Bomba Jockey');
+  doc.text('V. Entrada L1-L2: ' + (document.getElementById('jockey-v-entrada-l1l2').value || 'N/A'), 20, y); y += 5;
+
+  startSection('Firmas');
+  doc.text('Técnico: ' + (document.getElementById('jockey-tecnico').value || 'No especificado'), 20, y + 5);
+  doc.text('Cliente: ' + (document.getElementById('jockey-cliente').value || 'No especificado'), 120, y + 5);
+  const tecnicoCanvas = await html2canvas(document.getElementById('jockey-tecnico-signature'));
+  const clienteCanvas = await html2canvas(document.getElementById('jockey-cliente-signature'));
+  doc.addImage(tecnicoCanvas.toDataURL('image/png'), 'PNG', 20, y + 10, 80, 25);
+  doc.addImage(clienteCanvas.toDataURL('image/png'), 'PNG', 120, y + 10, 80, 25);
+
+  const contrato = document.getElementById('lugar-contrato').value || '0000';
+  const fecha = new Date();
+  const fechaCompacta = fecha.toISOString().slice(2,10).replace(/-/g,'');
+  doc.save(`RP_${contrato}_${fechaCompacta}.pdf`);
+}
+
+function getGPSLocation() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        const direccionInput = document.getElementById('lugar-direccion');
+        direccionInput.value = 'Obteniendo dirección...';
+        const geocoder = new google.maps.Geocoder();
+        geocoder.geocode({ location: { lat, lng } }, (results, status) => {
+          if (status === 'OK' && results[0]) direccionInput.value = results[0].formatted_address;
+          else direccionInput.value = lat.toFixed(4) + ', ' + lng.toFixed(4);
+        });
+      },
+      () => alert('Error: No se pudo obtener la ubicación.')
+    );
+  } else alert('Geolocalización no soportada por este navegador.');
+}
+</script>
+</body>
 </html>
