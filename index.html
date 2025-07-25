@@ -6,45 +6,32 @@
   <title>Mantenimiento de Sistemas de Bombeo</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-  <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=geocoding" async defer></script>
   <style>
-    body { font-family: 'Roboto', sans-serif; background-color: #e5e7eb; margin: 0; padding: 20px; display: flex; justify-content: center; }
-    .container { background: #ffffff; padding: 25px; border-radius: 10px; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1); width: 100%; max-width: 900px; }
-    .header img { display: block; margin: 0 auto 25px; max-width: 100%; height: auto; }
-    fieldset { margin-bottom: 20px; padding: 15px 20px; border: 1px solid #d1d5db; border-radius: 8px; background: #f9fafb; }
-    legend { font-size: 1.3rem; font-weight: bold; color: #1f2937; padding: 0 10px; }
-    label { display: block; margin-bottom: 5px; color: #374151; font-size: 0.95rem; }
-    input, select, textarea, .signature-box, .photo-box { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #d1d5db; border-radius: 5px; font-size: 0.95rem; }
+    body { font-family: 'Roboto', sans-serif; background: #e5e7eb; margin: 0; padding: 20px; display: flex; justify-content: center; }
+    .container { background: #fff; padding: 25px; border-radius: 10px; box-shadow: 0 6px 20px rgba(0,0,0,0.1); width: 100%; max-width: 900px; }
+    fieldset { margin-bottom: 20px; padding: 15px; border: 1px solid #d1d5db; border-radius: 8px; background: #f9fafb; }
+    legend { font-size: 1.3rem; font-weight: bold; color: #1f2937; }
+    label { display: block; margin-bottom: 5px; color: #374151; }
+    input, textarea { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #d1d5db; border-radius: 5px; }
     .input-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
-    .signature-box, .photo-box { height: 100px; border: 2px dashed #6b7280; background: #f3f4f6; text-align: center; line-height: 100px; cursor: pointer; border-radius: 5px; }
     .photo-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-    button { padding: 10px 18px; background-color: #1f2937; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 0.95rem; }
-    button:hover { background-color: #111827; }
+    .photo-box { height: 100px; border: 2px dashed #6b7280; background: #f3f4f6; text-align: center; line-height: 100px; border-radius: 5px; }
     .button-group { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin: 20px 0; }
-    .footer { margin-top: 15px; text-align: center; background: #1f2937; padding: 10px; border-radius: 5px; color: #ffffff; font-size: 0.85rem; }
+    button { padding: 10px 18px; background: #1f2937; color: #fff; border: none; border-radius: 5px; cursor: pointer; }
+    button:hover { background: #111827; }
+    .footer { text-align: center; background: #1f2937; color: #fff; padding: 10px; border-radius: 5px; margin-top: 15px; }
   </style>
 </head>
 <body>
 <div class="container">
-  <div class="header">
-    <img src="icons/banner.png" alt="Logo" id="header-logo">
-  </div>
   <form id="mantenimientoForm">
-    <!-- Lugar -->
     <fieldset>
       <legend>Lugar</legend>
-      <label for="lugar-direccion">Dirección</label>
-      <div class="input-group">
-        <input type="text" id="lugar-direccion" placeholder="Ej: Calle 123, Ciudad">
-        <button type="button" onclick="getGPSLocation()">Obtener GPS</button>
-      </div>
-      <label for="lugar-contrato">Número de Contrato</label>
-      <input type="text" id="lugar-contrato" required>
-      <label for="lugar-empresa">Empresa</label>
-      <input type="text" id="lugar-empresa" required>
+      <label>Dirección</label><input id="lugar-direccion">
+      <label>Número de Contrato</label><input id="lugar-contrato">
+      <label>Empresa</label><input id="lugar-empresa">
     </fieldset>
 
-    <!-- Bomba Jockey -->
     <fieldset>
       <legend>Bomba Jockey</legend>
       <div class="input-group">
@@ -52,40 +39,46 @@
         <input id="jockey-v-entrada-l1l3" placeholder="V. Entrada L1-L3">
         <input id="jockey-v-entrada-l2l3" placeholder="V. Entrada L2-L3">
         <input id="jockey-v-salida" placeholder="V. Salida">
+        <input id="jockey-descarga" placeholder="Descarga PSI">
+        <input id="jockey-amperaje-l1" placeholder="Amperaje L1">
+        <input id="jockey-amperaje-l2" placeholder="Amperaje L2">
+        <input id="jockey-amperaje-l3" placeholder="Amperaje L3">
       </div>
     </fieldset>
 
-    <!-- Bomba Eléctrica -->
     <fieldset>
       <legend>Bomba Eléctrica</legend>
       <div class="input-group">
         <input id="electrica-v-entrada" placeholder="V. Entrada">
         <input id="electrica-v-salida" placeholder="V. Salida">
+        <input id="electrica-descarga" placeholder="Descarga PSI">
+        <input id="electrica-amperaje-l1" placeholder="Amperaje L1">
+        <input id="electrica-amperaje-l2" placeholder="Amperaje L2">
+        <input id="electrica-amperaje-l3" placeholder="Amperaje L3">
       </div>
     </fieldset>
 
-    <!-- Bomba Diesel -->
     <fieldset>
       <legend>Bomba Diesel</legend>
       <div class="input-group">
         <input id="diesel-parametros-inicio" placeholder="Parámetros Inicio">
         <input id="diesel-parametros-paro" placeholder="Parámetros Paro">
         <input id="diesel-velocidad" placeholder="Velocidad RPM">
+        <input id="diesel-presion-aceite" placeholder="Presión Aceite PSI">
+        <input id="diesel-temp-inicial" placeholder="Temperatura Inicial">
+        <input id="diesel-temp-final" placeholder="Temperatura Final">
+        <textarea id="diesel-observaciones" placeholder="Observaciones"></textarea>
       </div>
-      <label><input type="checkbox" id="diesel-nivel-agua-correcto"> Niveles de Agua Correcto</label>
-      <label><input type="checkbox" id="diesel-nivel-aceite-correcto"> Niveles de Aceite Correcto</label>
+      <label><input type="checkbox" id="diesel-nivel-agua-correcto"> Agua Correcto</label>
+      <label><input type="checkbox" id="diesel-nivel-aceite-correcto"> Aceite Correcto</label>
     </fieldset>
 
-    <!-- Revisión de Hidrantes -->
     <fieldset>
       <legend>Revisión de Hidrantes</legend>
-      <div class="input-group">
-        <input type="checkbox" id="hidrante-1-ok"> Hidrante 1 OK
-        <input id="hidrante-1-comentarios" placeholder="Comentarios">
-      </div>
+      <label><input type="checkbox" id="hidrante-1-ok"> Hidrante 1 OK</label>
+      <input id="hidrante-1-comentarios" placeholder="Comentarios">
     </fieldset>
 
-    <!-- Fotos -->
     <fieldset>
       <legend>Fotografías</legend>
       <div class="photo-row">
@@ -94,18 +87,15 @@
       </div>
     </fieldset>
 
-    <!-- Firmas -->
     <fieldset>
       <legend>Firmas</legend>
       <div class="input-group">
         <div>
-          <label for="jockey-tecnico">Técnico</label>
-          <input type="text" id="jockey-tecnico">
+          <label>Técnico</label><input id="jockey-tecnico">
           <canvas id="jockey-tecnico-signature" width="300" height="80"></canvas>
         </div>
         <div>
-          <label for="jockey-cliente">Cliente</label>
-          <input type="text" id="jockey-cliente">
+          <label>Cliente</label><input id="jockey-cliente">
           <canvas id="jockey-cliente-signature" width="300" height="80"></canvas>
         </div>
       </div>
@@ -115,71 +105,55 @@
   <div class="button-group">
     <button type="button" onclick="exportToPDF()">Exportar a PDF</button>
   </div>
-  <div class="footer">
-    Certificados NFPA - Formato realizado por RL
-  </div>
+  <div class="footer">Certificados NFPA - Formato realizado por RL</div>
 </div>
 
 <script>
 async function exportToPDF() {
   const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-  const colorTitulo = [31, 41, 55];
-  const colorSeccion = [245, 245, 245];
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const colorTitulo = [31, 41, 55], colorSeccion = [245, 245, 245];
+  let y = 20;
 
-  function startSection(title) {
+  function section(t) {
     doc.setFillColor(...colorSeccion);
     doc.roundedRect(15, y, 180, 8, 2, 2, 'F');
     doc.setTextColor(...colorTitulo);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(13);
-    doc.text(title, 20, y + 6);
-    y += 12;
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(13);
+    doc.text(t, 20, y + 6); y += 12;
+    doc.setFont('helvetica', 'normal'); doc.setTextColor(0, 0, 0); doc.setFontSize(11);
   }
+  function field(l, v) { doc.text(`${l}: ${v}`, 20, y); y += 5; }
 
-  let y = 60;
-  startSection('Lugar');
-  doc.text('Dirección: ' + (document.getElementById('lugar-direccion').value || 'No especificado'), 20, y); y += 5;
-  doc.text('Número de Contrato: ' + (document.getElementById('lugar-contrato').value || 'No especificado'), 20, y); y += 5;
-  doc.text('Empresa: ' + (document.getElementById('lugar-empresa').value || 'No especificado'), 20, y); y += 10;
+  section('Lugar');
+  field('Dirección', document.getElementById('lugar-direccion').value || 'N/A');
+  field('Contrato', document.getElementById('lugar-contrato').value || 'N/A');
+  field('Empresa', document.getElementById('lugar-empresa').value || 'N/A');
 
-  startSection('Bomba Jockey');
-  doc.text('V. Entrada L1-L2: ' + (document.getElementById('jockey-v-entrada-l1l2').value || 'N/A'), 20, y); y += 5;
+  section('Bomba Jockey');
+  field('V. Entrada L1-L2', document.getElementById('jockey-v-entrada-l1l2').value || 'N/A');
+  field('Descarga PSI', document.getElementById('jockey-descarga').value || 'N/A');
 
-  startSection('Firmas');
-  doc.text('Técnico: ' + (document.getElementById('jockey-tecnico').value || 'No especificado'), 20, y + 5);
-  doc.text('Cliente: ' + (document.getElementById('jockey-cliente').value || 'No especificado'), 120, y + 5);
-  const tecnicoCanvas = await html2canvas(document.getElementById('jockey-tecnico-signature'));
-  const clienteCanvas = await html2canvas(document.getElementById('jockey-cliente-signature'));
-  doc.addImage(tecnicoCanvas.toDataURL('image/png'), 'PNG', 20, y + 10, 80, 25);
-  doc.addImage(clienteCanvas.toDataURL('image/png'), 'PNG', 120, y + 10, 80, 25);
+  section('Bomba Eléctrica');
+  field('V. Entrada', document.getElementById('electrica-v-entrada').value || 'N/A');
+  field('Descarga PSI', document.getElementById('electrica-descarga').value || 'N/A');
+
+  section('Bomba Diesel');
+  field('Parámetros Inicio', document.getElementById('diesel-parametros-inicio').value || 'N/A');
+  field('Observaciones', document.getElementById('diesel-observaciones').value || 'N/A');
+  field('Agua', document.getElementById('diesel-nivel-agua-correcto').checked ? 'Correcto' : 'No');
+
+  section('Firmas');
+  doc.text('Técnico: ' + (document.getElementById('jockey-tecnico').value || 'N/A'), 20, y + 5);
+  doc.text('Cliente: ' + (document.getElementById('jockey-cliente').value || 'N/A'), 120, y + 5);
+  const tSig = await html2canvas(document.getElementById('jockey-tecnico-signature'));
+  const cSig = await html2canvas(document.getElementById('jockey-cliente-signature'));
+  doc.addImage(tSig.toDataURL('image/png'), 'PNG', 20, y + 10, 80, 25);
+  doc.addImage(cSig.toDataURL('image/png'), 'PNG', 120, y + 10, 80, 25);
 
   const contrato = document.getElementById('lugar-contrato').value || '0000';
-  const fecha = new Date();
-  const fechaCompacta = fecha.toISOString().slice(2,10).replace(/-/g,'');
-  doc.save(`RP_${contrato}_${fechaCompacta}.pdf`);
-}
-
-function getGPSLocation() {
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const lat = position.coords.latitude;
-        const lng = position.coords.longitude;
-        const direccionInput = document.getElementById('lugar-direccion');
-        direccionInput.value = 'Obteniendo dirección...';
-        const geocoder = new google.maps.Geocoder();
-        geocoder.geocode({ location: { lat, lng } }, (results, status) => {
-          if (status === 'OK' && results[0]) direccionInput.value = results[0].formatted_address;
-          else direccionInput.value = lat.toFixed(4) + ', ' + lng.toFixed(4);
-        });
-      },
-      () => alert('Error: No se pudo obtener la ubicación.')
-    );
-  } else alert('Geolocalización no soportada por este navegador.');
+  const fecha = new Date().toISOString().slice(2,10).replace(/-/g,'');
+  doc.save(`RP_${contrato}_${fecha}.pdf`);
 }
 </script>
 </body>
