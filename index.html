@@ -38,15 +38,16 @@
         return gk_fileData[filename] || "";
         }
         </script><!DOCTYPE html>
+
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mantenimiento de Sistemas de Bombeo</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=geocoding&callback=initMap" async defer></script>
-    <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Mantenimiento de Sistemas de Bombeo</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script async="" defer="" src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&amp;libraries=geocoding&amp;callback=initMap"></script>
+<style>
     body {
         font-family: 'Roboto', sans-serif;
         background-color: #e5e7eb;
@@ -169,282 +170,275 @@
 </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <img src="icons/banner.png" alt="Logo" id="header-logo">
-        </div>
-        <form id="mantenimientoForm">
-            <fieldset>
-                <legend>Lugar</legend>
-                <div>
-                    <label for="lugar-direccion">Dirección</label>
-                    <div class="input-group-inline">
-                        <input type="text" id="lugar-direccion" placeholder="Ej: Calle 123, Ciudad">
-                        <button type="button" onclick="getGPSLocation()">Obtener GPS</button>
+<div class="container">
+<div class="header">
+<img alt="Logo" id="header-logo" src="icons/banner.png"/>
+</div>
+<form id="mantenimientoForm">
+<fieldset>
+<legend>Lugar</legend>
+<div>
+<label for="lugar-direccion">Dirección</label>
+<div class="input-group-inline">
+<input id="lugar-direccion" placeholder="Ej: Calle 123, Ciudad" type="text"/>
+<button onclick="getGPSLocation()" type="button">Obtener GPS</button>
+</div>
+</div>
+<div>
+<label for="lugar-contrato">Número de Contrato</label>
+<input id="lugar-contrato" required="" type="text"/>
+</div>
+<div>
+<label for="lugar-empresa">Empresa</label>
+<input id="lugar-empresa" required="" type="text"/>
+</div>
+<div id="dynamic-date"></div>
+</fieldset>
+<fieldset>
+<legend>Bomba Jockey</legend>
+<div class="input-group">
+<div>
+<label for="jockey-v-entrada-l1l2">V. Entrada L1-L2</label>
+<input id="jockey-v-entrada-l1l2" max="999" min="0" step="0.1" type="number"/>
+</div>
+<div>
+<label for="jockey-v-entrada-l1l3">V. Entrada L1-L3</label>
+<input id="jockey-v-entrada-l1l3" max="999" min="0" step="0.1" type="number"/>
+</div>
+<div>
+<label for="jockey-v-entrada-l2l3">V. Entrada L2-L3</label>
+<input id="jockey-v-entrada-l2l3" max="999" min="0" step="0.1" type="number"/>
+</div>
+<div>
+<label for="jockey-v-salida">V. Salida</label>
+<input id="jockey-v-salida" max="999" min="0" step="0.1" type="number"/>
+</div>
+</div>
+<div>
+<label for="jockey-parametros-inicio">Parámetros Inicio</label>
+<input id="jockey-parametros-inicio" type="text"/>
+</div>
+<div>
+<label for="jockey-parametros-paro">Parámetros Paro</label>
+<input id="jockey-parametros-paro" type="text"/>
+</div>
+<div class="input-group">
+<div>
+<label for="jockey-lecturas-inicio">Lect. Inicio</label>
+<input id="jockey-lecturas-inicio" max="999" min="0" step="0.1" type="number"/>
+</div>
+<div>
+<label for="jockey-lecturas-paro">Lect. Paro</label>
+<input id="jockey-lecturas-paro" max="999" min="0" step="0.1" type="number"/>
+</div>
+</div>
+<div class="input-group">
+<div>
+<label for="jockey-amperaje-l1">Amperaje L1</label>
+<input id="jockey-amperaje-l1" max="999" min="0" step="0.1" type="number"/>
+</div>
+<div>
+<label for="jockey-amperaje-l2">Amperaje L2</label>
+<input id="jockey-amperaje-l2" max="999" min="0" step="0.1" type="number"/>
+</div>
+<div>
+<label for="jockey-amperaje-l3">Amperaje L3</label>
+<input id="jockey-amperaje-l3" max="999" min="0" step="0.1" type="number"/>
+</div>
+</div>
+<div>
+<label for="jockey-descarga">Descarga PSI</label>
+<input id="jockey-descarga" max="999" min="0" step="0.1" type="number"/>
+</div>
+</fieldset>
+<fieldset>
+<legend>Bomba Eléctrica</legend>
+<div class="input-group">
+<div>
+<label for="electrica-v-entrada">V. Entrada</label>
+<input id="electrica-v-entrada" max="999" min="0" step="0.1" type="number"/>
+</div>
+<div>
+<label for="electrica-v-salida">V. Salida</label>
+<input id="electrica-v-salida" max="999" min="0" step="0.1" type="number"/>
+</div>
+</div>
+<div>
+<label for="electrica-parametros-inicio">Parámetros Inicio</label>
+<input id="electrica-parametros-inicio" type="text"/>
+</div>
+<div>
+<label for="electrica-parametros-paro">Parámetros Paro</label>
+<input id="electrica-parametros-paro" type="text"/>
+</div>
+<div class="input-group">
+<div>
+<label for="electrica-lecturas-inicio">Lect. Inicio</label>
+<input id="electrica-lecturas-inicio" max="999" min="0" step="0.1" type="number"/>
+</div>
+<div>
+<label for="electrica-lecturas-paro">Lect. Paro</label>
+<input id="electrica-lecturas-paro" max="999" min="0" step="0.1" type="number"/>
+</div>
+</div>
+<div class="input-group">
+<div>
+<label for="electrica-amperaje-l1">Amperaje L1</label>
+<input id="electrica-amperaje-l1" max="999" min="0" step="0.1" type="number"/>
+</div>
+<div>
+<label for="electrica-amperaje-l2">Amperaje L2</label>
+<input id="electrica-amperaje-l2" max="999" min="0" step="0.1" type="number"/>
+</div>
+<div>
+<label for="electrica-amperaje-l3">Amperaje L3</label>
+<input id="electrica-amperaje-l3" max="999" min="0" step="0.1" type="number"/>
+</div>
+</div>
+<div>
+<label for="electrica-descarga">Descarga PSI</label>
+<input id="electrica-descarga" max="999" min="0" step="0.1" type="number"/>
+</div>
+</fieldset>
+<fieldset>
+<legend>Bomba Diesel</legend>
+<div class="input-group">
+<div>
+<label>Niveles de Agua</label>
+<input id="diesel-nivel-agua-correcto" type="checkbox"/> Correcto
                     </div>
-                </div>
-                <div>
-                    <label for="lugar-contrato">Número de Contrato</label>
-                    <input type="text" id="lugar-contrato" required>
-                </div>
-                <div>
-                    <label for="lugar-empresa">Empresa</label>
-                    <input type="text" id="lugar-empresa" required>
-                </div>
-                <div id="dynamic-date"></div>
-            </fieldset>
-
-            <fieldset>
-                <legend>Bomba Jockey</legend>
-                <div class="input-group">
-                    <div>
-                        <label for="jockey-v-entrada-l1l2">V. Entrada L1-L2</label>
-                        <input type="number" id="jockey-v-entrada-l1l2" step="0.1" min="0" max="999">
+<div>
+<label>Niveles de Aceite</label>
+<input id="diesel-nivel-aceite-correcto" type="checkbox"/> Correcto
                     </div>
-                    <div>
-                        <label for="jockey-v-entrada-l1l3">V. Entrada L1-L3</label>
-                        <input type="number" id="jockey-v-entrada-l1l3" step="0.1" min="0" max="999">
-                    </div>
-                    <div>
-                        <label for="jockey-v-entrada-l2l3">V. Entrada L2-L3</label>
-                        <input type="number" id="jockey-v-entrada-l2l3" step="0.1" min="0" max="999">
-                    </div>
-                    <div>
-                        <label for="jockey-v-salida">V. Salida</label>
-                        <input type="number" id="jockey-v-salida" step="0.1" min="0" max="999">
-                    </div>
-                </div>
-                <div>
-                    <label for="jockey-parametros-inicio">Parámetros Inicio</label>
-                    <input type="text" id="jockey-parametros-inicio">
-                </div>
-                <div>
-                    <label for="jockey-parametros-paro">Parámetros Paro</label>
-                    <input type="text" id="jockey-parametros-paro">
-                </div>
-                <div class="input-group">
-                    <div>
-                        <label for="jockey-lecturas-inicio">Lect. Inicio</label>
-                        <input type="number" id="jockey-lecturas-inicio" step="0.1" min="0" max="999">
-                    </div>
-                    <div>
-                        <label for="jockey-lecturas-paro">Lect. Paro</label>
-                        <input type="number" id="jockey-lecturas-paro" step="0.1" min="0" max="999">
-                    </div>
-                </div>
-                <div class="input-group">
-                    <div>
-                        <label for="jockey-amperaje-l1">Amperaje L1</label>
-                        <input type="number" id="jockey-amperaje-l1" step="0.1" min="0" max="999">
-                    </div>
-                    <div>
-                        <label for="jockey-amperaje-l2">Amperaje L2</label>
-                        <input type="number" id="jockey-amperaje-l2" step="0.1" min="0" max="999">
-                    </div>
-                    <div>
-                        <label for="jockey-amperaje-l3">Amperaje L3</label>
-                        <input type="number" id="jockey-amperaje-l3" step="0.1" min="0" max="999">
-                    </div>
-                </div>
-                <div>
-                    <label for="jockey-descarga">Descarga PSI</label>
-                    <input type="number" id="jockey-descarga" step="0.1" min="0" max="999">
-                </div>
-            </fieldset>
-
-            <fieldset>
-                <legend>Bomba Eléctrica</legend>
-                <div class="input-group">
-                    <div>
-                        <label for="electrica-v-entrada">V. Entrada</label>
-                        <input type="number" id="electrica-v-entrada" step="0.1" min="0" max="999">
-                    </div>
-                    <div>
-                        <label for="electrica-v-salida">V. Salida</label>
-                        <input type="number" id="electrica-v-salida" step="0.1" min="0" max="999">
-                    </div>
-                </div>
-                <div>
-                    <label for="electrica-parametros-inicio">Parámetros Inicio</label>
-                    <input type="text" id="electrica-parametros-inicio">
-                </div>
-                <div>
-                    <label for="electrica-parametros-paro">Parámetros Paro</label>
-                    <input type="text" id="electrica-parametros-paro">
-                </div>
-                <div class="input-group">
-                    <div>
-                        <label for="electrica-lecturas-inicio">Lect. Inicio</label>
-                        <input type="number" id="electrica-lecturas-inicio" step="0.1" min="0" max="999">
-                    </div>
-                    <div>
-                        <label for="electrica-lecturas-paro">Lect. Paro</label>
-                        <input type="number" id="electrica-lecturas-paro" step="0.1" min="0" max="999">
-                    </div>
-                </div>
-                <div class="input-group">
-                    <div>
-                        <label for="electrica-amperaje-l1">Amperaje L1</label>
-                        <input type="number" id="electrica-amperaje-l1" step="0.1" min="0" max="999">
-                    </div>
-                    <div>
-                        <label for="electrica-amperaje-l2">Amperaje L2</label>
-                        <input type="number" id="electrica-amperaje-l2" step="0.1" min="0" max="999">
-                    </div>
-                    <div>
-                        <label for="electrica-amperaje-l3">Amperaje L3</label>
-                        <input type="number" id="electrica-amperaje-l3" step="0.1" min="0" max="999">
-                    </div>
-                </div>
-                <div>
-                    <label for="electrica-descarga">Descarga PSI</label>
-                    <input type="number" id="electrica-descarga" step="0.1" min="0" max="999">
-                </div>
-            </fieldset>
-
-            <fieldset>
-                <legend>Bomba Diesel</legend>
-                <div class="input-group">
-                    <div>
-                        <label>Niveles de Agua</label>
-                        <input type="checkbox" id="diesel-nivel-agua-correcto"> Correcto
-                    </div>
-                    <div>
-                        <label>Niveles de Aceite</label>
-                        <input type="checkbox" id="diesel-nivel-aceite-correcto"> Correcto
-                    </div>
-                </div>
-                <div>
-                    <label for="diesel-parametros-inicio">Parámetros Inicio</label>
-                    <input type="text" id="diesel-parametros-inicio">
-                </div>
-                <div>
-                    <label for="diesel-parametros-paro">Parámetros Paro</label>
-                    <input type="text" id="diesel-parametros-paro">
-                </div>
-                <div class="input-group">
-                    <div>
-                        <label>+3/4</label>
-                        <input type="radio" id="diesel-diesel-3cuarto" name="diesel-level" value="+3/4">
-                    </div>
-                    <div>
-                        <label>-3/4</label>
-                        <input type="radio" id="diesel-diesel-menos3cuarto" name="diesel-level" value="-3/4">
-                    </div>
-                    <div>
-                        <label for="diesel-litros-faltan">Litros faltan</label>
-                        <input type="number" id="diesel-litros-faltan" step="0.1" min="0" max="999">
-                    </div>
-                </div>
-                <div class="input-group">
-                    <div>
-                        <label for="diesel-lecturas-inicio">Lect. Inicio</label>
-                        <input type="number" id="diesel-lecturas-inicio" step="0.1" min="0" max="999">
-                    </div>
-                    <div>
-                        <label for="diesel-lecturas-paro">Lect. Paro</label>
-                        <input type="number" id="diesel-lecturas-paro" step="0.1" min="0" max="999">
-                    </div>
-                </div>
-                <div>
-                    <label for="diesel-velocidad">Velocidad RPM</label>
-                    <input type="number" id="diesel-velocidad" step="0.1" min="0" max="9999">
-                </div>
-                <div>
-                    <label for="diesel-vac">VAC</label>
-                    <input type="number" id="diesel-vac" step="0.1" min="0" max="999">
-                </div>
-                <div>
-                    <label for="diesel-presion-aceite">Pres. Aceite PSI</label>
-                    <input type="number" id="diesel-presion-aceite" step="0.1" min="0" max="999">
-                </div>
-                <div class="input-group">
-                    <div>
-                        <label for="diesel-temp-inicial">Temp. Inicial (°C)</label>
-                        <input type="number" id="diesel-temp-inicial" step="0.1" min="0" max="999">
-                    </div>
-                    <div>
-                        <label for="diesel-temp-final">Temp. Final (°C)</label>
-                        <input type="number" id="diesel-temp-final" step="0.1" min="0" max="999">
-                    </div>
-                </div>
-                <div class="input-group">
-                    <div>
-                        <label for="diesel-hrs-inicial">Hrs. Inicial</label>
-                        <input type="number" id="diesel-hrs-inicial" step="0.1" min="0" max="9999">
-                    </div>
-                    <div>
-                        <label for="diesel-hrs-final">Hrs. Final</label>
-                        <input type="number" id="diesel-hrs-final" step="0.1" min="0" max="9999">
-                    </div>
-                </div>
-                <div>
-                    <label for="diesel-observaciones">Observaciones</label>
-                    <textarea id="diesel-observaciones" rows="3"></textarea>
-                </div>
-            </fieldset>
-
-            <fieldset id="hidrantes-section">
-                <legend>Revisión de Hidrantes</legend>
-                <div class="input-group">
-                    <div>
-                        <label>Hidrante 1</label>
-                        <input type="checkbox" id="hidrante-1-ok"> OK
-                        <input type="text" id="hidrante-1-comentarios" placeholder="Comentarios">
-                    </div>
-                </div>
-                <button type="button" onclick="addHidrante()">Agregar hidrante</button>
-            </fieldset>
-
-            <div class="photo-row">
-                <div class="photo-box" id="photo1">Cargar Foto 1</div>
-                <div class="photo-box" id="photo2">Cargar Foto 2</div>
-                <div class="photo-box" id="photo3">Cargar Foto 3</div>
-                <div class="photo-box" id="photo4">Cargar Foto 4</div>
-            </div>
-            <div class="photo-row">
-                <div class="photo-box" id="photo5">Cargar Foto 5</div>
-                <div class="photo-box" id="photo6">Cargar Foto 6</div>
-                <div class="photo-box" id="photo7">Cargar Foto 7</div>
-                <div class="photo-box" id="photo8">Cargar Foto 8</div>
-            </div>
-
-            <fieldset>
-                <legend>Firmas</legend>
-                <div>
-                    <label for="jockey-tecnico">Técnico</label>
-                    <input type="text" id="jockey-tecnico" required>
-                </div>
-                <div class="signature-row">
-                    <div>
-                        <label for="jockey-tecnico-signature">Firma Técnico</label>
-                        <canvas id="jockey-tecnico-signature" width="300" height="80"></canvas>
-                        <button type="button" onclick="clearSignature('jockey-tecnico-signature')">Borrar</button>
-                    </div>
-                </div>
-                <div>
-                    <label for="jockey-cliente">Cliente</label>
-                    <input type="text" id="jockey-cliente" required>
-                </div>
-                <div class="signature-row">
-                    <div>
-                        <label for="jockey-cliente-signature">Firma Cliente</label>
-                        <canvas id="jockey-cliente-signature" width="300" height="80"></canvas>
-                        <button type="button" onclick="clearSignature('jockey-cliente-signature')">Borrar</button>
-                    </div>
-                </div>
-            </fieldset>
-        </form>
-        <div class="button-group">
-            <button type="button" onclick="exportToPDF()">Exportar a PDF</button>
-            <button type="button" onclick="shareWhatsApp()">Compartir por WhatsApp</button>
-        </div>
-        <div class="footer">
-            <p>Certificados NFPA - Formato realizado por RL</p>
-        </div>
-    </div>
-
-    <script>
+</div>
+<div>
+<label for="diesel-parametros-inicio">Parámetros Inicio</label>
+<input id="diesel-parametros-inicio" type="text"/>
+</div>
+<div>
+<label for="diesel-parametros-paro">Parámetros Paro</label>
+<input id="diesel-parametros-paro" type="text"/>
+</div>
+<div class="input-group">
+<div>
+<label>+3/4</label>
+<input id="diesel-diesel-3cuarto" name="diesel-level" type="radio" value="+3/4"/>
+</div>
+<div>
+<label>-3/4</label>
+<input id="diesel-diesel-menos3cuarto" name="diesel-level" type="radio" value="-3/4"/>
+</div>
+<div>
+<label for="diesel-litros-faltan">Litros faltan</label>
+<input id="diesel-litros-faltan" max="999" min="0" step="0.1" type="number"/>
+</div>
+</div>
+<div class="input-group">
+<div>
+<label for="diesel-lecturas-inicio">Lect. Inicio</label>
+<input id="diesel-lecturas-inicio" max="999" min="0" step="0.1" type="number"/>
+</div>
+<div>
+<label for="diesel-lecturas-paro">Lect. Paro</label>
+<input id="diesel-lecturas-paro" max="999" min="0" step="0.1" type="number"/>
+</div>
+</div>
+<div>
+<label for="diesel-velocidad">Velocidad RPM</label>
+<input id="diesel-velocidad" max="9999" min="0" step="0.1" type="number"/>
+</div>
+<div>
+<label for="diesel-vac">VAC</label>
+<input id="diesel-vac" max="999" min="0" step="0.1" type="number"/>
+</div>
+<div>
+<label for="diesel-presion-aceite">Pres. Aceite PSI</label>
+<input id="diesel-presion-aceite" max="999" min="0" step="0.1" type="number"/>
+</div>
+<div class="input-group">
+<div>
+<label for="diesel-temp-inicial">Temp. Inicial (°C)</label>
+<input id="diesel-temp-inicial" max="999" min="0" step="0.1" type="number"/>
+</div>
+<div>
+<label for="diesel-temp-final">Temp. Final (°C)</label>
+<input id="diesel-temp-final" max="999" min="0" step="0.1" type="number"/>
+</div>
+</div>
+<div class="input-group">
+<div>
+<label for="diesel-hrs-inicial">Hrs. Inicial</label>
+<input id="diesel-hrs-inicial" max="9999" min="0" step="0.1" type="number"/>
+</div>
+<div>
+<label for="diesel-hrs-final">Hrs. Final</label>
+<input id="diesel-hrs-final" max="9999" min="0" step="0.1" type="number"/>
+</div>
+</div>
+<div>
+<label for="diesel-observaciones">Observaciones</label>
+<textarea id="diesel-observaciones" rows="3"></textarea>
+</div>
+</fieldset>
+<fieldset id="hidrantes-section">
+<legend>Revisión de Hidrantes</legend>
+<div class="input-group">
+<div>
+<label>Hidrante 1</label>
+<input id="hidrante-1-ok" type="checkbox"/> OK
+                        <input id="hidrante-1-comentarios" placeholder="Comentarios" type="text"/>
+</div>
+</div>
+<button onclick="addHidrante()" type="button">Agregar hidrante</button>
+</fieldset>
+<div class="photo-row">
+<div class="photo-box" id="photo1">Cargar Foto 1</div>
+<div class="photo-box" id="photo2">Cargar Foto 2</div>
+<div class="photo-box" id="photo3">Cargar Foto 3</div>
+<div class="photo-box" id="photo4">Cargar Foto 4</div>
+</div>
+<div class="photo-row">
+<div class="photo-box" id="photo5">Cargar Foto 5</div>
+<div class="photo-box" id="photo6">Cargar Foto 6</div>
+<div class="photo-box" id="photo7">Cargar Foto 7</div>
+<div class="photo-box" id="photo8">Cargar Foto 8</div>
+</div>
+<fieldset>
+<legend>Firmas</legend>
+<div>
+<label for="jockey-tecnico">Técnico</label>
+<input id="jockey-tecnico" required="" type="text"/>
+</div>
+<div class="signature-row">
+<div>
+<label for="jockey-tecnico-signature">Firma Técnico</label>
+<canvas height="80" id="jockey-tecnico-signature" width="300"></canvas>
+<button onclick="clearSignature('jockey-tecnico-signature')" type="button">Borrar</button>
+</div>
+</div>
+<div>
+<label for="jockey-cliente">Cliente</label>
+<input id="jockey-cliente" required="" type="text"/>
+</div>
+<div class="signature-row">
+<div>
+<label for="jockey-cliente-signature">Firma Cliente</label>
+<canvas height="80" id="jockey-cliente-signature" width="300"></canvas>
+<button onclick="clearSignature('jockey-cliente-signature')" type="button">Borrar</button>
+</div>
+</div>
+</fieldset>
+</form>
+<div class="button-group">
+<button onclick="exportToPDF()" type="button">Exportar a PDF</button>
+<button onclick="shareWhatsApp()" type="button">Compartir por WhatsApp</button>
+</div>
+<div class="footer">
+<p>Certificados NFPA - Formato realizado por RL</p>
+</div>
+</div>
+<script>
         // Establecer fecha y hora dinámica
         function setCurrentDateTime() {
             const now = new Date();
@@ -680,5 +674,5 @@
             window.open(`https://wa.me/?text=${encodedMessage}`, '_blank');
         }
     </script>
-</body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script></body>
 </html>
