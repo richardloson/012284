@@ -1,304 +1,114 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mantenimiento de Sistemas de Bombeo</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=geocoding&callback=initMap" async defer></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PDF Mejorado</title>
     <style>
         body {
-            font-family: 'Roboto', sans-serif;
-            background-color: #e5e7eb;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f4f4f4;
+            color: #333;
         }
-        .container {
-            background: #ffffff;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 900px;
+        h1, h2, h3 {
+            color: #00539C;
         }
-        .header img {
-            display: block;
-            margin: 0 auto 25px;
-            max-width: 100%;
-            height: auto;
-        }
-        fieldset {
-            margin-bottom: 20px;
-            padding: 15px 20px;
-            border: 1px solid #d1d5db;
+        .content {
+            background: #fff;
+            padding: 15px 25px;
             border-radius: 8px;
-            background: #f9fafb;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            max-width: 900px;
+            margin: auto;
         }
-        legend {
-            font-size: 1.3rem;
-            font-weight: bold;
-            color: #1f2937;
-            padding: 0 10px;
-            margin-bottom: 10px;
+        p {
+            line-height: 1.6;
         }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            color: #374151;
-            font-size: 0.95rem;
-        }
-        input, select, textarea, .signature-box, .photo-box {
+        table {
             width: 100%;
-            padding: 8px;
-            margin-bottom: 10px;
-            border: 1px solid #d1d5db;
-            border-radius: 5px;
-            font-size: 0.95rem;
-            box-sizing: border-box;
+            border-collapse: collapse;
+            margin: 15px 0;
         }
-        .input-group {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 10px;
-            margin-bottom: 10px;
+        table, th, td {
+            border: 1px solid #ccc;
         }
-        .input-group-inline {
-            display: flex;
-            align-items: center;
-            gap: 10px;
+        th, td {
+            padding: 10px;
+            text-align: left;
         }
-        .signature-box, .photo-box {
-            height: 100px;
-            border: 2px dashed #6b7280;
-            background: #f3f4f6;
-            text-align: center;
-            line-height: 100px;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-        .photo-row {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        button {
-            padding: 10px 18px;
-            background-color: #1f2937;
+        th {
+            background: #00539C;
             color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 0.95rem;
-            transition: background-color 0.3s;
-        }
-        button:hover {
-            background-color: #111827;
-        }
-        .button-group {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin: 20px 0;
         }
         .footer {
-            margin-top: 15px;
             text-align: center;
-            background: #1f2937;
-            padding: 10px;
-            border-radius: 5px;
-            color: #ffffff;
-            font-size: 0.85rem;
+            font-size: 0.9em;
+            color: #777;
+            margin-top: 30px;
         }
-        @media (max-width: 600px) {
-            .photo-row {
-                grid-template-columns: repeat(2, 1fr);
+        /* Estilos para impresión */
+        @media print {
+            body {
+                background: white;
+                color: black;
             }
-            .button-group {
-                flex-direction: column;
+            .content {
+                box-shadow: none;
+                max-width: 100%;
+                margin: 0;
+                padding: 0;
             }
-            button {
-                width: 100%;
+            table, th, td {
+                border: 1px solid black;
+            }
+            th {
+                background: #ccc !important;
+                color: black !important;
             }
         }
     </style>
 </head>
 <body>
-<div class="container">
-    <div class="header">
-        <img src="icons/banner.png" alt="Logo" id="header-logo">
+    <div class="content">
+        <h1>Reporte Mejorado</h1>
+        <h2>Sección 1: Introducción</h2>
+        <p>Este documento es un ejemplo de cómo estructurar un contenido HTML que pueda convertirse fácilmente en PDF, manteniendo un diseño limpio y profesional.</p>
+
+        <h2>Sección 2: Datos Importantes</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Elemento</th>
+                    <th>Descripción</th>
+                    <th>Valor</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Fecha</td>
+                    <td>Fecha del reporte</td>
+                    <td>25/07/2025</td>
+                </tr>
+                <tr>
+                    <td>Autor</td>
+                    <td>Nombre del responsable</td>
+                    <td>Ricardo Lazos</td>
+                </tr>
+                <tr>
+                    <td>Estado</td>
+                    <td>Estado del proyecto</td>
+                    <td>En progreso</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>Sección 3: Conclusiones</h2>
+        <p>El diseño está optimizado para impresión y visualización en pantalla, con estilos adaptados para asegurar legibilidad y estética.</p>
+
+        <div class="footer">
+            &copy; 2025 Ricardo Lazos. Todos los derechos reservados.
+        </div>
     </div>
-    <form id="mantenimientoForm">
-        <fieldset>
-            <legend>Lugar</legend>
-            <label for="lugar-direccion">Dirección</label>
-            <div class="input-group-inline">
-                <input type="text" id="lugar-direccion" placeholder="Ej: Calle 123, Ciudad">
-                <button type="button" onclick="getGPSLocation()">Obtener GPS</button>
-            </div>
-            <label for="lugar-contrato">Número de Contrato</label>
-            <input type="text" id="lugar-contrato" required>
-            <label for="lugar-empresa">Empresa</label>
-            <input type="text" id="lugar-empresa" required>
-        </fieldset>
-
-        <!-- Bomba Jockey -->
-        <fieldset>
-            <legend>Bomba Jockey</legend>
-            <div class="input-group">
-                <div>
-                    <label for="jockey-v-entrada-l1l2">V. Entrada L1-L2</label>
-                    <input type="number" id="jockey-v-entrada-l1l2" step="0.1" min="0" max="999">
-                </div>
-                <div>
-                    <label for="jockey-v-entrada-l1l3">V. Entrada L1-L3</label>
-                    <input type="number" id="jockey-v-entrada-l1l3" step="0.1" min="0" max="999">
-                </div>
-                <div>
-                    <label for="jockey-v-entrada-l2l3">V. Entrada L2-L3</label>
-                    <input type="number" id="jockey-v-entrada-l2l3" step="0.1" min="0" max="999">
-                </div>
-                <div>
-                    <label for="jockey-v-salida">V. Salida</label>
-                    <input type="number" id="jockey-v-salida" step="0.1" min="0" max="999">
-                </div>
-            </div>
-        </fieldset>
-
-        <!-- Bomba Eléctrica -->
-        <fieldset>
-            <legend>Bomba Eléctrica</legend>
-            <div class="input-group">
-                <div>
-                    <label for="electrica-v-entrada">V. Entrada</label>
-                    <input type="number" id="electrica-v-entrada" step="0.1" min="0" max="999">
-                </div>
-                <div>
-                    <label for="electrica-v-salida">V. Salida</label>
-                    <input type="number" id="electrica-v-salida" step="0.1" min="0" max="999">
-                </div>
-            </div>
-        </fieldset>
-
-        <!-- Firmas -->
-        <fieldset>
-            <legend>Firmas</legend>
-            <div class="input-group">
-                <div>
-                    <label for="jockey-tecnico">Técnico</label>
-                    <input type="text" id="jockey-tecnico" required>
-                    <canvas id="jockey-tecnico-signature" width="300" height="80"></canvas>
-                </div>
-                <div>
-                    <label for="jockey-cliente">Cliente</label>
-                    <input type="text" id="jockey-cliente" required>
-                    <canvas id="jockey-cliente-signature" width="300" height="80"></canvas>
-                </div>
-            </div>
-        </fieldset>
-    </form>
-
-    <div class="button-group">
-        <button type="button" onclick="exportToPDF()">Exportar a PDF</button>
-        <button type="button" onclick="shareWhatsApp()">Compartir por WhatsApp</button>
-    </div>
-    <div class="footer">
-        <p>Certificados NFPA - Formato realizado por RL</p>
-    </div>
-</div>
-
-<script>
-    async function exportToPDF() {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-        const colorTitulo = [31, 41, 55];
-        const colorSeccion = [245, 245, 245];
-
-        function addHeaderFooter(pageNum) {
-            return new Promise((resolve) => {
-                const logoImg = new Image();
-                logoImg.onload = () => {
-                    const logoWidth = 180;
-                    const logoHeight = (logoImg.height / logoImg.width) * logoWidth;
-                    const x = (210 - logoWidth) / 2;
-                    doc.addImage(logoImg, 'PNG', x, 10, logoWidth, logoHeight);
-                    doc.setFontSize(16);
-                    doc.setTextColor(30, 30, 30);
-                    doc.text('Reporte de Mantenimiento - Sistemas de Bombeo', 105, 50, { align: 'center' });
-                    doc.setFontSize(10);
-                    doc.setFillColor(...colorTitulo);
-                    doc.setTextColor(255, 255, 255);
-                    doc.rect(0, 287, 210, 10, 'F');
-                    doc.text('Certificados NFPA - Formato realizado por RL', 105, 293, { align: 'center' });
-                    doc.text(`Página ${pageNum}`, 200, 293, { align: 'right' });
-                    resolve();
-                };
-                logoImg.onerror = () => resolve();
-                logoImg.src = 'icons/banner.png';
-            });
-        }
-
-        let y = 60;
-        let pageNum = 1;
-        await addHeaderFooter(pageNum);
-
-        function startSection(title) {
-            doc.setFillColor(...colorSeccion);
-            doc.roundedRect(15, y, 180, 8, 2, 2, 'F');
-            doc.setTextColor(...colorTitulo);
-            doc.setFont('helvetica', 'bold');
-            doc.setFontSize(13);
-            doc.text(title, 20, y + 6);
-            y += 12;
-            doc.setFont('helvetica', 'normal');
-            doc.setTextColor(0, 0, 0);
-            doc.setFontSize(11);
-        }
-
-        function addField(label, value) {
-            doc.text(`${label}: ${value}`, 20, y);
-            y += 5;
-        }
-
-        // Lugar
-        startSection('Lugar');
-        addField('Dirección', document.getElementById('lugar-direccion').value || 'No especificado');
-        addField('Número de Contrato', document.getElementById('lugar-contrato').value || 'No especificado');
-        addField('Empresa', document.getElementById('lugar-empresa').value || 'No especificado');
-
-        // Guardar PDF con formato RP_<contrato>_<fecha>
-        const contrato = document.getElementById('lugar-contrato').value || '0000';
-        const fecha = new Date();
-        const fechaCompacta = fecha.toISOString().slice(2,10).replace(/-/g,'');
-        const fileName = `RP_${contrato}_${fechaCompacta}.pdf`;
-        doc.save(fileName);
-    }
-
-    function getGPSLocation() {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    const lat = position.coords.latitude;
-                    const lng = position.coords.longitude;
-                    const direccionInput = document.getElementById('lugar-direccion');
-                    direccionInput.value = `Obteniendo dirección...`;
-                    const geocoder = new google.maps.Geocoder();
-                    geocoder.geocode({ location: { lat, lng } }, (results, status) => {
-                        if (status === 'OK' && results[0]) {
-                            direccionInput.value = results[0].formatted_address;
-                        } else {
-                            direccionInput.value = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
-                        }
-                    });
-                },
-                () => { alert('Error: No se pudo obtener la ubicación.'); }
-            );
-        } else { alert('Geolocalización no soportada por este navegador.'); }
-    }
-</script>
 </body>
 </html>
